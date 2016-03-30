@@ -32,57 +32,39 @@ function StrIsExist($objStr,$str){
 *
 */
 function GetHtmlCharset($html){
-	// 获取本页面上所有charset
+    // 获取本页面上所有charset
     preg_match_all( '/charset=([\S]*)/' , $html , $char );
     // 获取目标字符串
     $str = $char[1][0];
     if(empty($str)){
-    	$char = $str;
+        $char = $str;
     }else{
-    	// 判断是单引号还是双引号
-    	if(strpos($str, '"') == 0){
-    		$fpos = 1;
-    		$lpos = strrpos($str, '"')-1;
-    	}else if(strpos($str, '"') > 0){
-    		$fpos = 0;
-    	    $lpos = strrpos($str, '"');
-    	}else if(strpos($str, "'") == 0){
-    		$fpos = 1;
-    		$lpos = strrpos($str, "'")-1;
-    	}else if(strpos($str, "'") > 0){
-    		$fpos = 0;
-    	    $lpos = strrpos($str, "'");
-    	}else{
-    		$fpos = 0;
+        // 判断是单引号还是双引号
+        if(strpos($str, '"') == 0){
+            $fpos = 1;
+            $lpos = strrpos($str, '"')-1;
+        }else if(strpos($str, '"') > 0){
+            $fpos = 0;
+            $lpos = strrpos($str, '"');
+        }else if(strpos($str, "'") == 0){
+            $fpos = 1;
+            $lpos = strrpos($str, "'")-1;
+        }else if(strpos($str, "'") > 0){
+            $fpos = 0;
+            $lpos = strrpos($str, "'");
+        }else{
+            $fpos = 0;
             $lpos = 0;
-    	}
+        }
 
-    	if($lpos > $fpos){
-    		$char = substr($str, $fpos,$lpos);
-    	}else{
-    		$char = $str;
-    	}
+        if($lpos > $fpos){
+            $char = substr($str, $fpos,$lpos);
+        }else{
+            $char = $str;
+        }
     }
 
     return $char;
-}
-/*
-* 函数说明：获取文章标题
-* 
-* @access  public
-* @parame  $tit        string  目标文章标题
-* @return  $tit        string  文章标题
-* @update  2016-03-29
-*
-*/
-function GetTitle($tit){
-	if($tpos = stripos($tit, '_')){
-	    $tit = substr($tit, 0,$tpos);
-    }else if($tpos = stripos($tit, '-')){
-	    $tit = substr($tit, 0,$tpos);
-    }else{
-	    $tit = $tit;
-    }
 }
 /*
 * 函数说明：抓取网页
@@ -139,6 +121,31 @@ function GetHtml($url){
     return $html;
 }
 /*
+* 函数说明：获取文章标题
+* 
+* @access  public
+* @parame  $html        string  网页内容
+* @return  $tit         string  文章标题
+* @update  2016-03-29
+*
+*/
+function GetTitle($html){
+    // 获取本页面的标题
+    preg_match_all( '/<title>([\s\S]*?)<\/title>/' , $html , $tlist );
+    // 获取匹配到的title
+    $tit = $tlist[1][0];
+
+    if($tpos = stripos($tit, '_')){
+        $tit = substr($tit, 0,$tpos);
+    }else if($tpos = stripos($tit, '-')){
+        $tit = substr($tit, 0,$tpos);
+    }else{
+        $tit = $tit;
+    }
+
+    return $tit;
+}
+/*
 * 函数说明：获取网页所有url
 * 
 * @access  public
@@ -155,7 +162,7 @@ function GetHtmlUrlAll($html){
 
     // 获取有用的url
     for($i=0,$j=0; $i<count($alist[2]);$i++){
-    	if(judgeStrIsExist($alist[2][$i],'http://') || judgeStrIsExist($alist[2][$i],'https://')){
+    	if(StrIsExist($alist[2][$i],'http://') || StrIsExist($alist[2][$i],'https://')){
     		// 如果链接(a)中存在其它属性，则需要截取出href属性值
     		if($apos = stripos($alist[2][$i], '"')){
     			$wo_alist[$j] = substr($alist[2][$i], 0,$apos);
@@ -187,7 +194,7 @@ function GetUrlHost($url){
     }
 
     // 判断抽取出来的主机是否有www
-    if(strpos($host,"www.") === false){
+    if(!StrIsExist($host,'www.')){
     	$host = 'www.'.$host;
     }
 
@@ -282,12 +289,19 @@ function UrlIsArticle($url){
 	// 获取html上所有的url
 	$urlall = GetHtmlUrlAll($html); 
 	// 已经收录的，增加收录次数，未收录的，收录进去
+    echo count($urlall);
 	for($i=0; $i<count($urlall); $i++){
 	    AddUrl($urlall[$i]);
     }
 
     // 获取title
-    $title = GetTitle();
+    $title = GetTitle($html);
+    echo $title;
+
+    // 判断标题出现的次数
+    $times = substr_count($html, $title);
+    echo $times;
+
 }
 ?>
 

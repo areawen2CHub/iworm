@@ -18,15 +18,9 @@
 
 <?php
 // 抓取网页
-$html = getHtml('http://news.163.com/domestic/');
-$urilist = getHtmlUrlAll($html);
-echo count($urilist);
-for($i=0; $i<count($urilist); $i++){
-	insertUrlOne($urilist[$i]);
-	// echo $urilist[$i].'<br />';
-
-}
-
+// UrlIsArticle('http://www.iyiou.com/');
+$html = new HTML('http://www.iyiou.com/');
+$html->UrlIsArticle();
 ?>
 </body>
 </html>
