@@ -289,18 +289,18 @@ function UrlIsArticle($url){
 	// 获取html上所有的url
 	$urlall = GetHtmlUrlAll($html); 
 	// 已经收录的，增加收录次数，未收录的，收录进去
-    echo count($urlall);
+    // echo count($urlall);
 	for($i=0; $i<count($urlall); $i++){
 	    AddUrl($urlall[$i]);
     }
 
     // 获取title
     $title = GetTitle($html);
-    echo $title;
+    // echo $title;
 
     // 判断标题出现的次数
     $times = substr_count($html, $title);
-    echo $times;
+    // echo $times;
 
 }
 ?>

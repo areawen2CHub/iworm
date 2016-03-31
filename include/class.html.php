@@ -18,11 +18,21 @@ class HTML
 {
 	var $url;
 	var $html;
+    var $char;
+    var $host;
 
     // 构造函数初始化$url
 	function HTML($url){
+        // 初始化$url
 		$this->url  = $url;
-		$this->html = $this->GetHTML($url);
+        // 初始化$html
+		$this->html = $this->GetHTML();
+        // 初始化￥char
+        $this->char = $this->GetHTMLCharset();
+        // 转换charset
+        $this->ChangeHTMLCharset();
+        // 初始化$host
+        $this->host = $this->GetUrlHost($url);
 	}
     
     /*
@@ -37,50 +47,6 @@ class HTML
     */
     function StrIsExist($objStr,$str){
         return false !== strpos($objStr,$str); 
-    }
-	/*
-    * 函数说明：获取网页charset
-    * 
-    * @access  public
-    * @parame  $html        string  网页内容
-    * @return  $char        string  网页charset
-    * @update  2016-03-29
-    *
-    */
-    function GetHTMLCharset($html){
-        // 获取本页面上所有charset
-        preg_match_all('/charset=([\S]*)/',$html,$char);
-        // 获取目标字符串
-        $str = $char[1][0];
-        // 如果没有，则不作处理
-        if(empty($str)){
-            $char = $str;
-        }else{
-            // 判断是单引号还是双引号
-            if(strpos($str, '"') == 0){
-                $fpos = 1;
-                $lpos = strrpos($str, '"')-1;
-            }else if(strpos($str, '"') > 0){
-                $fpos = 0;
-                $lpos = strrpos($str, '"');
-            }else if(strpos($str, "'") == 0){
-                $fpos = 1;
-                $lpos = strrpos($str, "'")-1;
-            }else if(strpos($str, "'") > 0){
-                $fpos = 0;
-                $lpos = strrpos($str, "'");
-            }else{
-                $fpos = 0;
-                $lpos = 0;
-            }    
-            // 是否需要截取
-            if($lpos > $fpos){
-                $char = substr($str, $fpos,$lpos);
-            }else{
-                $char = $str;
-            }
-        }    
-        return $char;
     }
     /*
     * 函数说明：抓取网页
@@ -129,11 +95,65 @@ class HTML
         }  
         @curl_close($ch);     
 
-        $char = $this->GetHtmlCharset($html);
-        if(!empty($char)){
-        	$html = iconv( $char , "utf-8//IGNORE" , $html);
-        }
         return $html;
+    }
+    /*
+    * 函数说明：获取网页charset
+    * 
+    * @access  public
+    * @parame  无
+    * @return  无
+    * @update  2016-03-29
+    *
+    */
+    function GetHTMLCharset(){
+        // 获取本页面上所有charset
+        preg_match_all('/charset=([\S]*)/',$this->html,$char);
+        // 获取目标字符串
+        $str = $char[1][0];
+        // 如果没有，则不作处理
+        if(empty($str)){
+            $char = $str;
+        }else{
+            // 判断是单引号还是双引号
+            if(strpos($str, '"') == 0){
+                $fpos = 1;
+                $lpos = strrpos($str, '"')-1;
+            }else if(strpos($str, '"') > 0){
+                $fpos = 0;
+                $lpos = strrpos($str, '"');
+            }else if(strpos($str, "'") == 0){
+                $fpos = 1;
+                $lpos = strrpos($str, "'")-1;
+            }else if(strpos($str, "'") > 0){
+                $fpos = 0;
+                $lpos = strrpos($str, "'");
+            }else{
+                $fpos = 0;
+                $lpos = 0;
+            }    
+            // 是否需要截取
+            if($lpos > $fpos){
+                $char = substr($str, $fpos,$lpos);
+            }else{
+                $char = $str;
+            }
+        }    
+        return $char;
+    }
+    /*
+    * 函数说明：改变网页charset
+    * 
+    * @access  public
+    * @parame  无
+    * @return  无
+    * @update  2016-03-29
+    *
+    */
+    function ChangeHTMLCharset(){
+        if(!empty($this->char)){
+            $this->html = iconv( $this->char , "utf-8//IGNORE" , $this->html);
+        }
     }
     /*
     * 函数说明：获取文章标题
@@ -191,20 +211,27 @@ class HTML
     	// 获取抓取网页上的所有url
     	preg_match_all('/href=\"([\s\S]*?)\"/',$this->html,$alist);
         // 定义存储a链接地址数组
-        // $wo_alist = array();
-        // // 获取有用的url
-        // for($i=0,$j=0; $i<count($alist[2]);$i++){
-        // 	if($this->StrIsExist($alist[2][$i],'http://') || $this->StrIsExist($alist[2][$i],'https://')){
-        // 		// 如果链接(a)中存在其它属性，则需要截取出href属性值
-        // 		if($apos = stripos($alist[2][$i], '"')){
-        // 			$wo_alist[$j] = substr($alist[2][$i], 0,$apos);
-        // 		}else{
-        // 			$wo_alist[$j] = $alist[2][$i];
-        // 		}
-        // 		$j++;
-        // 	}
-        // }
-        return $alist[1];
+        $wo_alist = array();
+        // 获取有用的url
+        for($i=0,$j=0; $i<count($alist[1]);$i++){
+            // 获取目标iurl
+            $ourl  = $alist[1][$i];
+            // 获取第一个字符
+            $fchar = substr($ourl,0,1);
+            // 这样的url不需要
+            if($ourl == '/' || $this->StrIsExist($ourl,'.css') || $this->StrIsExist($ourl,'.js') || $this->StrIsExist($ourl,'javascript') || $this->StrIsExist($ourl,'#') || empty($ourl)){
+                continue;
+            }else if($fchar != 'h' && $fchar !='w' && $fchar != '/'){
+                continue;
+            }else if($fchar == '/'){
+                $wo_alist[$j] = $this->host.$ourl;
+                $j++;
+            }else{
+                $wo_alist[$j] = $ourl;
+                $j++;
+            }
+        }
+        return $wo_alist;
     }
     /*
     * 函数说明：获取url中的主机
@@ -215,43 +242,43 @@ class HTML
     * @update  2016-03-29
     *
     */
-    function GetUrlHost(){
-        $tempu=parse_url($this->url);  
+    function GetUrlHost($url){
+        $tempu=parse_url($url);  
         if(empty($tempu['host'])){
-        	$host = GetUrlHost2();
+        	// $host = $this->GetUrlHost2($url);
         }else{
         	$host = $tempu['host'];
         }
         // 判断抽取出来的主机是否有www
-        if(!StrIsExist($host,'www.')){
+        if(!$this->StrIsExist($host,'www.')){
         	$host = 'www.'.$host;
         }
         return $host;  
     }
 
-    function GetUrlHost2(){  
-    	$pattern = "/[/w-]+/.(com|net|org|gov|biz|com.tw|com.hk|com.ru|net.tw|net.hk|net.ru|info|cn|com.cn|net.cn|org.cn|gov.cn|mobi|name|sh|ac|la|travel|tm|us|cc|tv|jobs|asia|hn|lc|hk|bz|com.hk|ws|tel|io|tw|ac.cn|bj.cn|sh.cn|tj.cn|cq.cn|he.cn|sx.cn|nm.cn|ln.cn|jl.cn|hl.cn|js.cn|zj.cn|ah.cn|fj.cn|jx.cn|sd.cn|ha.cn|hb.cn|hn.cn|gd.cn|gx.cn|hi.cn|sc.cn|gz.cn|yn.cn|xz.cn|sn.cn|gs.cn|qh.cn|nx.cn|xj.cn|tw.cn|hk.cn|mo.cn|org.hk|is|edu|mil|au|jp|int|kr|de|vc|ag|in|me|edu.cn|co.kr|gd|vg|co.uk|be|sg|it|ro|com.mo)(/.(cn|hk))*/";  
-        preg_match($pattern, $this->url, $matches);  
-        if(count($matches) > 0) {  
-            return $matches[0];  
-        }else{  
-            $rs = parse_url($this->url);  
-            $main_url = $rs["host"];  
-            if(!strcmp(long2ip(sprintf("%u",ip2long($main_url))),$main_url)){  
-                return $main_url;  
-            }else{  
-                $arr = explode(".",$main_url);  
-                $count=count($arr);  
-                $endArr = array("com","net","org");//com.cn net.cn 等情况  
-                if (in_array($arr[$count-2],$endArr)){  
-                    $domain = $arr[$count-3].".".$arr[$count-2].".".$arr[$count-1];  
-                }else{  
-                    $domain = $arr[$count-2].".".$arr[$count-1];  
-                }  
-                return $domain;  
-            }  
-        }  
-    }
+    // function GetUrlHost2($url){  
+    // 	$pattern = "/[/w-]+/.(com|net|org|gov|biz|com.tw|com.hk|com.ru|net.tw|net.hk|net.ru|info|cn|com.cn|net.cn|org.cn|gov.cn|mobi|name|sh|ac|la|travel|tm|us|cc|tv|jobs|asia|hn|lc|hk|bz|com.hk|ws|tel|io|tw|ac.cn|bj.cn|sh.cn|tj.cn|cq.cn|he.cn|sx.cn|nm.cn|ln.cn|jl.cn|hl.cn|js.cn|zj.cn|ah.cn|fj.cn|jx.cn|sd.cn|ha.cn|hb.cn|hn.cn|gd.cn|gx.cn|hi.cn|sc.cn|gz.cn|yn.cn|xz.cn|sn.cn|gs.cn|qh.cn|nx.cn|xj.cn|tw.cn|hk.cn|mo.cn|org.hk|is|edu|mil|au|jp|int|kr|de|vc|ag|in|me|edu.cn|co.kr|gd|vg|co.uk|be|sg|it|ro|com.mo)(/.(cn|hk))*/";  
+    //     preg_match($pattern, $url, $matches);  
+    //     if(count($matches) > 0) {  
+    //         return $matches[0];  
+    //     }else{  
+    //         $rs = parse_url($url);  
+    //         $main_url = $rs["host"];  
+    //         if(!strcmp(long2ip(sprintf("%u",ip2long($main_url))),$main_url)){  
+    //             return $main_url;  
+    //         }else{  
+    //             $arr = explode(".",$main_url);  
+    //             $count=count($arr);  
+    //             $endArr = array("com","net","org");//com.cn net.cn 等情况  
+    //             if (in_array($arr[$count-2],$endArr)){  
+    //                 $domain = $arr[$count-3].".".$arr[$count-2].".".$arr[$count-1];  
+    //             }else{  
+    //                 $domain = $arr[$count-2].".".$arr[$count-1];  
+    //             }  
+    //             return $domain;  
+    //         }  
+    //     }  
+    // }
     /*
     * 函数说明：获取主机对应的IP
     * 
@@ -274,25 +301,24 @@ class HTML
     * @update  2016-03-29
     *
     */
-    function AddUrl(){    
-
+    function AddUrl($url){    
     	global $dosql;    
-
-    	$row = $dosql->GetOne("SELECT * FROM v_db_infourl WHERE url='".$this->url."'");
+    	$row = $dosql->GetOne("SELECT * FROM v_db_infourl WHERE url='".$url."'");
     	// 检查是否存在
     	if(is_array($row)){
     		// 如果存在，增加一次收录
-            $dosql->ExecNoneQuery("UPDATE v_db_infourl SET inctimes=inctimes+1 WHERE url='".$this->url."'");
+            $dosql->ExecNoneQuery("UPDATE v_db_infourl SET inctimes=inctimes+1 WHERE url='".$url."'");
     	}else{
             // 如果不存在，则收录该url
             // 获取主机
-            $host = GetUrlHost();
+            echo $url;
+            $host = $this->GetUrlHost($url);
             // 获取IP
-            $ip = GetHostIP($host);
+            $ip = $this->GetHostIP($host);
             // 创建时间
             $createtime = GetMkTime(time());    
 
-            $sql = "INSERT INTO v_db_infourl (url, urlip, urlhost, createtime, inctimes, incstate,delstate) VALUES ('".$this->url."', '".$ip."', '".$host."', '".$createtime."', 1, 'false','false')";
+            $sql = "INSERT INTO v_db_infourl (url, urlip, urlhost, createtime, inctimes, incstate,delstate) VALUES ('".$url."', '".$ip."', '".$host."', '".$createtime."', 1, 'false','false')";
             $dosql->ExecNoneQuery($sql);    
 
          //    if($dosql->ExecNoneQuery($sql)){
@@ -312,23 +338,23 @@ class HTML
     */
     function UrlIsArticle(){
     	// 不管该页面是否为需要的文章界面，都要将其中的url收集起来，作为下一次抓取的原url
-    	// 获取html
-    	$html = $this->GetHTML();
     	// 获取html上所有的url
     	$urlall = $this->GetHTMLUrlAll(); 
     	// 已经收录的，增加收录次数，未收录的，收录进去
-        echo count($urlall);
+        // print_r($urlall);
+        // echo count($urlall);
     	for($i=0; $i<count($urlall); $i++){
-    	    AddUrl($urlall[$i]);
+            echo $urlall[$i].'<br />';
+    	    // $this->AddUrl($urlall[$i]);
         }    
 
         // 获取title
         $title = $this->GetHTMLTitle();
-        echo $title;    
+        // echo $title;    
 
         // 判断标题出现的次数
         $times = substr_count($this->html, $title);
-        echo $times;    
+        // echo $times;    
     }
 }
 ?>
