@@ -28,6 +28,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE IF NOT EXISTS `v_db_infourl` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'urlid',
+  `parenturl` varchar(255) NOT NULL COMMENT '来源地址',
   `url` varchar(255) NOT NULL COMMENT '链接地址',
   `urlip` varchar(30) NOT NULL COMMENT '链接ip',
   `urlhost` varchar(255) NOT NULL COMMENT '链接主机',
