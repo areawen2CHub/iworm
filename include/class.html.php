@@ -33,20 +33,27 @@ class HTML
         $this->ChangeHTMLCharset();
         // 初始化$host
         $this->host = $this->GetUrlHost($url);
+
+        // 不管该页面是否为需要的文章界面，都要将其中的url收集起来，作为下一次抓取的原url
+        // 获取html上所有的url
+        $urlall = $this->GetHTMLUrlAll(); 
+        // 已经收录的，增加收录次数，未收录的，收录进去
+        for($i=0; $i<count($urlall); $i++){
+            $this->AddUrl($urlall[$i]);
+        } 
 	}
-    
     /*
     * 函数说明：判断字符串中是否存在某个字符/字符串
     * 
     * @access  public
-    * @parame  $objStr     string  目标字符串
+    * @parame  $ostr     string  目标字符串
     * @parame  $str        string  查询字符串
     * @return  fasle/true  bool    查询结果
     * @update  2016-03-28
     *
     */
-    function StrIsExist($objStr,$str){
-        return false !== strpos($objStr,$str); 
+    function StrIsExist($ostr,$str){
+        return false !== strpos($ostr,$str); 
     }
     /*
     * 函数说明：抓取网页
@@ -314,28 +321,26 @@ class HTML
     	}
     }
     /*
-    * 函数说明：判断该url对应的网页是否为文章
+    * 函数说明：获取网页内容
     * 
     * @access  public
-    * @parame  $url         string  需要插入的url
+    * @parame  无
     * @return  false/true   bool    是/否     
-    * @update  2016-03-30
+    * @update  2016-03-31
     *
     */
-    function UrlIsArticle(){
-    	// 不管该页面是否为需要的文章界面，都要将其中的url收集起来，作为下一次抓取的原url
-    	// 获取html上所有的url
-    	$urlall = $this->GetHTMLUrlAll(); 
-    	// 已经收录的，增加收录次数，未收录的，收录进去
-    	for($i=0; $i<count($urlall); $i++){
-    	    $this->AddUrl($urlall[$i]);
-        }    
-        // 获取title
-        $title = $this->GetHTMLTitle();   
-
-        // 判断标题出现的次数
-        $times = substr_count($this->html, $title);
-        // echo $times;    
+    function GetHTMLContent(){  
+        // charset不能为空
+        if(!empty($this->char)){
+            // 获取title
+            $title = $this->GetHTMLTitle(); 
+            // 判断标题出现的次数
+            $times = substr_count($this->html, $title);
+        }else{
+            $retu = fasle;
+        } 
+          
+        return $retu;  
     }
 }
 ?>

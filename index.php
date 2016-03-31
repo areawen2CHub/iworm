@@ -19,8 +19,8 @@
 <?php
 // 抓取网页
 // UrlIsArticle('http://www.iyiou.com/');
-$html = new HTML('http://news.163.com/');
-$html->UrlIsArticle();
+$html = new HTML('http://www.100toutiao.com/');
+// $html->UrlIsArticle();
 ?>
 </body>
 </html>
