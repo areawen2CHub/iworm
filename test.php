@@ -20,7 +20,9 @@ if($cfg_webswitch == 'N')
 	// 	sleep($sleep_time);
 	// }while(true)
 
-$html = '<p class="symposiastx_photo_attention">亿欧网专家作者，经纬易达信息咨询公司BM研究经理</p><p class="symposiastx_photo_attention">亿欧网专家作者</p>';
-$title = '亿欧网';
-echo substr_count($html, $title);
+// $html = '<p class="symposiastx_photo_attention">亿欧网专家作者，经纬易达信息咨询公司BM研究经理</p><p class="symposiastx_photo_attention">亿欧网专家作者</p>';
+// $title = '亿欧网';
+// echo substr_count($html, $title);
+
+echo(mt_rand(50,100));
 ?>

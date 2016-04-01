@@ -66,6 +66,7 @@ require_once(VYAHUI_INC.'/common.conf.php');    // 全局配置文件
 require_once(VYAHUI_INC.'/common.func.php');    // 全局常用函数
 require_once(VYAHUI_INC.'/mysql.conf.php');     // 引入数据库连接文件
 require_once(VYAHUI_INC.'/class.html.php');     // 引入HTNL类
+require_once(VYAHUI_INC.'/class.htmli.php');    // 引入HTNLI类
 
 
 //引入数据库类

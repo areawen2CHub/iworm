@@ -15,7 +15,7 @@ person: zhang
  * 该类定义了完成html操作相关的所有方法
  */
 
-class HTML
+class HTMLI
 {
 	var $url;
 	var $html;
@@ -23,7 +23,7 @@ class HTML
     var $host;
 
     // 构造函数初始化$url
-	function HTML($url){
+	function HTMLI($url){
         // $url为空，则返回
         if(empty($url)){
             return false;
@@ -43,15 +43,15 @@ class HTML
         // 初始化$host
         $this->host = $this->GetUrlHost($url);
         // 收录charset
-        $this->AddCharset();
+        // $this->AddCharset();
 
         // 不管该页面是否为需要的文章界面，都要将其中的url收集起来，作为下一次抓取的原url
         // 获取html上所有的url
-        $urlall = $this->GetHTMLUrlAll(); 
-        // 已经收录的，增加收录次数，未收录的，收录进去
-        for($i=0; $i<count($urlall); $i++){
-            $this->AddUrl($urlall[$i]);
-        } 
+        // $urlall = $this->GetHTMLUrlAll(); 
+        // // 已经收录的，增加收录次数，未收录的，收录进去
+        // for($i=0; $i<count($urlall); $i++){
+        //     $this->AddUrl($urlall[$i]);
+        // } 
 	}
     /*
     * 函数说明：判断字符串中是否存在某个字符/字符串
@@ -372,37 +372,12 @@ class HTML
             if($times>1 && $times<5){
                 // 获取p标签的内容
                 // preg_match_all( '/<p[\s\S]*>[\s\S]*<\/p>/' , $this->html , $plist );
-                preg_match_all( '/<p>.*<\/p>/' , $this->html , $plist );
-                // print_r($plist);
-                $content = $plist[0][0];
-                // 获取关键字
-                preg_match_all('/<meta[\s]+name=\"keywords\"[\s]+content=\"([\s\S]*?)\"[\s]+\/>/', $this->html, $kwlist);
-                if(isset($kwlist[1][0])){
-                    $keywords = $kwlist[1][0];
-                }else{
-                    $keywords = '';
-                }
-                // 获取描述
-                preg_match_all('/<meta[\s]+name=\"description\"[\s]+content=\"([\s\S]*?)\"[\s]+\/>/', $this->html, $deslist);
-                if(isset($deslist[1][0])){
-                    $description = $deslist[1][0];
-                }else{
-                    $description = '';
-                }
-                // 创建时间
-                $createtime = GetMkTime(time()); 
-                // 点击量
-                $hits = mt_rand(50,100);
-                global $dosql;    
-                $row = $dosql->GetOne("SELECT * FROM v_db_infoarticle WHERE ourl='".$this->url."'");
-                // 如果已存在，则退出
-                if(is_array($row)){
-                    $retu = fasle;
-                }else{
-                        // 如果不存在，则收录
-                        $sql = "INSERT INTO v_db_infoarticle (title, isoriginal, ourl, keywords, description, content, hits, orderid, createtime, checkinfo, delstate) VALUES ('".$title."', 'false', '".$this->url."', '".$keywords."', '".$description."', '".$content."', '".$hits."', '0', '".$createtime."', 'true', 'false')";
-                        $dosql->ExecNoneQuery($sql); 
-                }
+                preg_match_all( '%<p>(.*?)</p>%si' , $this->html , $plist );
+                print_r($plist);
+                // echo $plist[0][0];
+                // for($i=0; $i<count($plist); $i++){
+                //     echo $plist[0][$i];
+                // }
             }
             
             // echo $title;
@@ -412,7 +387,7 @@ class HTML
         }else{
             $retu = fasle;
         } 
-
+        
         return $retu;  
     }
 }
