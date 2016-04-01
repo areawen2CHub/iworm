@@ -1,4 +1,5 @@
 <?php   if(!defined('IN_VYAHUI')) exit('Request Error!');
+header("content-Type: text/html; charset=utf-8");
 
 /*
 **************************
@@ -23,24 +24,34 @@ class HTML
 
     // 构造函数初始化$url
 	function HTML($url){
+        // $url为空，则返回
+        if(empty($url)){
+            return false;
+        }
         // 初始化$url
 		$this->url  = $url;
         // 初始化$html
 		$this->html = $this->GetHTML();
-        // 初始化￥char
+        // 初始化$char
         $this->char = $this->GetHTMLCharset();
+        // 如果$char为空，则返回
+        if(empty($this->char)){
+            return false;
+        }
         // 转换charset
         $this->ChangeHTMLCharset();
         // 初始化$host
         $this->host = $this->GetUrlHost($url);
+        // 收录charset
+        $this->AddCharset();
 
         // 不管该页面是否为需要的文章界面，都要将其中的url收集起来，作为下一次抓取的原url
         // 获取html上所有的url
-        $urlall = $this->GetHTMLUrlAll(); 
-        // 已经收录的，增加收录次数，未收录的，收录进去
-        for($i=0; $i<count($urlall); $i++){
-            $this->AddUrl($urlall[$i]);
-        } 
+        // $urlall = $this->GetHTMLUrlAll(); 
+        // // 已经收录的，增加收录次数，未收录的，收录进去
+        // for($i=0; $i<count($urlall); $i++){
+        //     $this->AddUrl($urlall[$i]);
+        // } 
 	}
     /*
     * 函数说明：判断字符串中是否存在某个字符/字符串
@@ -287,7 +298,7 @@ class HTML
     	return $ip;
     }
     /*
-    * 函数说明：插入一个url
+    * 函数说明：插入url
     * 
     * @access  public
     * @parame  $url         string  需要插入的url
@@ -321,7 +332,28 @@ class HTML
     	}
     }
     /*
-    * 函数说明：获取网页内容
+    * 函数说明：插入charset
+    * 
+    * @access  public
+    * @parame  $url         string  需要插入的url
+    * @return  无
+    * @update  2016-03-29
+    *
+    */
+    function AddCharset(){    
+        global $dosql;    
+        $row = $dosql->GetOne("SELECT * FROM v_db_charset WHERE host='".$this->host."'");
+        // 检查是否存在
+        if(!is_array($row) && !empty($this->char)){
+            // 如果不存在，则收录
+            $sql = "INSERT INTO v_db_charset (charset, host) VALUES ('".$this->char."', '".$this->host."')";
+            $dosql->ExecNoneQuery($sql); 
+        }else{
+            return false;
+        }
+    }
+    /*
+    * 函数说明：获取网页内容，如果是文章，则收录，并返回true，如果非文章，返回false
     * 
     * @access  public
     * @parame  无
@@ -336,6 +368,22 @@ class HTML
             $title = $this->GetHTMLTitle(); 
             // 判断标题出现的次数
             $times = substr_count($this->html, $title);
+            // $title必须出现2-4次，再多可能就是首页了
+            if($times>1 && $times<5){
+                // 获取p标签的内容
+                // preg_match_all( '/<p[\s\S]*>[\s\S]*<\/p>/' , $this->html , $plist );
+                preg_match_all( '%<p>(.*?)</p>%si' , $this->html , $plist );
+                print_r($plist);
+                // echo $plist[0][0];
+                // for($i=0; $i<count($plist); $i++){
+                //     echo $plist[0][$i];
+                // }
+            }
+            
+            // echo $title;
+            // echo $times;
+
+            $retu = true;
         }else{
             $retu = fasle;
         } 

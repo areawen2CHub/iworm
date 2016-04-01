@@ -15,12 +15,17 @@
 <link rel="stylesheet" href="css/font-awesome.min.css">
 </head>
 <body>
-
-<?php
-// 抓取网页
-// UrlIsArticle('http://www.iyiou.com/');
-$html = new HTML('http://www.100toutiao.com/index.php?m=Index&a=show&cat=3&id=56012');
-$html->GetHTMLContent();
-?>
+<div class="container">
+	<div class="row">
+		<div class="col-md-8">
+			<?php
+            // 抓取网页
+            // UrlIsArticle('http://www.iyiou.com/');
+            $html = new HTML('http://www.100toutiao.com/index.php?m=Index&a=show&cat=3&id=56012');
+            $html->GetHTMLContent();
+            ?>
+		</div>
+	</div>
+</div>
 </body>
 </html>

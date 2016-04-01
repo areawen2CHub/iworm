@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS `v_db_infourl` (
   `delstate` enum('true','false') NOT NULL COMMENT '删除状态',
   `deltime` int(10) unsigned NOT NULL COMMENT '删除时间',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=19 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 
 --
@@ -67,4 +67,16 @@ CREATE TABLE IF NOT EXISTS `v_db_infoarticle` (
   `deltime` int(10) unsigned NOT NULL COMMENT '删除时间',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+
+--
+-- 表的结构 `v_db_infcharset`
+--
+
+CREATE TABLE IF NOT EXISTS `v_db_charset` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'charsetid',
+  `charset` varchar(50) NOT NULL COMMENT 'charset',
+  `host` varchar(255) NOT NULL COMMENT '来源主机',
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
