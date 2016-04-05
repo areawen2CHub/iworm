@@ -19,7 +19,7 @@
 <?php
 // 抓取网页
 // UrlIsArticle('http://www.iyiou.com/');
-$html = new HTML('http://www.100toutiao.com/index.php?m=Index&a=show&cat=3&id=55551');
+$html = new HTML('http://www.100toutiao.com/index.php?m=Index&a=show&cat=3&id=56058');
 if($html->GetHTMLContent()){
 	echo '插入成功';
 }

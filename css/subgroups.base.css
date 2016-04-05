@@ -2227,6 +2227,28 @@ span.list-read{
     font-family:Verdana;
     color:#8c8c8c;
 }
+/*无序列表+序号*/
+.list .list-num li{
+	font-size:13px;
+    height:28px;
+    line-height:28px;
+    list-style: none;
+}
+.list .list-num li span.squ{
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    display: inline-block;
+    background:#ccc;
+    text-align: center;
+    color: #fff;
+    padding: 0 4px 0 3px;
+    font-size: 12px;
+    margin-right: 7px;
+}
+.list .list-num li span.hot{
+	background:#C40000;
+}
 
 /*模块头部类型*/
 .title{
@@ -2267,6 +2289,30 @@ span.list-read{
 }
 .tit-aorise li a:hover{
     color: #f47e2f;
+}
+/*iworm类型*/
+.tit-iworm{
+	border:solid 1px #ddd;
+	background:#F8F8F8;
+}
+.tit-iworm  span{
+	height: 40px;
+	width: 40px;
+	line-height: 40px;
+	display: inline-block;
+	border-right: solid 1px #ddd;
+	text-align: center;
+	font-size: 18px;
+	float: left;
+	color: #568ABC;
+}
+.tit-iworm h3{
+	margin: 0;
+	height: 40px;
+	line-height: 40px;
+	padding: 0 0 0 12px;
+	display: inline-block;
+	font-size: 15px;
 }
 
 /*图片类型*/
