@@ -1,4 +1,5 @@
 <?php
+header("Content-type:text/html;charset=utf-8");
 require_once(dirname(__FILE__).'/include/common.entr.php'); //全局入口文件
 // require_once(PHPMYWIND_INC.'/func.class.php');
 // require_once(PHPMYWIND_INC.'/page.class.php');
@@ -12,17 +13,25 @@ if($cfg_webswitch == 'N')
 	echo $cfg_switchshow.'<br /><br /><i>'.$cfg_webname.'</i>';
 	exit();
 }
-	// ignore_user_abort(true);//关闭浏览器后，继续执行php代码
-	// set_time_limit(0);//程序执行时间无限制
-	// $sleep_time = 1;//多长时间执行一次
-	// do{
-	// 	echo '执行的文件'.time();
-	// 	sleep($sleep_time);
-	// }while(true)
+// $html = new HTML('http://www.100toutiao.com/index.php?m=Index&a=show&cat=3&id=56058');
 
-// $html = '<p class="symposiastx_photo_attention">亿欧网专家作者，经纬易达信息咨询公司BM研究经理</p><p class="symposiastx_photo_attention">亿欧网专家作者</p>';
-// $title = '亿欧网';
-// echo substr_count($html, $title);
-
-echo(mt_rand(50,100));
+function GetHTMLImageOne(){
+	// 图片存储路径
+	$save_path = 'uploads/image/';
+	// 以年月日为文件夹名称
+	$file_name = MyDate('ymd', GetMkTime(time()));
+	$save_path .='20'.$file_name;
+	//如果不存在，则创建
+	if(!is_dir($save_path)){  
+		$res=mkdir($save_path,0777,true); 
+		if($res){
+			echo "目录".$save_path."创建成功";
+		}else{
+			echo "目录".$save_path."创建失败";
+		}
+	}else{
+		echo "目录".$save_path."已存在";
+	}
+}
+GetHTMLImageOne();
 ?>
