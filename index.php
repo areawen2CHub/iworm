@@ -33,10 +33,10 @@
                 <div class="col-md-6 col-sm-6 col-xs-12">
                     <div class="header-sign-right text-right">
                         <ul>
-                            <li><a href="#" class="icon-flag"></a></li>
-                            <li><a href="#" class="icon-umbrella"></a></li>
-                            <li><a href="#" class="icon-trophy"></a></li>
-                            <li><a href="#" class="icon-group"></a></li>
+                            <li><i class="icon-phone"></i>18107459923</li>
+                            <li><i class="icon-envelope"></i>vyahui@admin.com</li>
+<!--                             <li><a href="#" class="icon-trophy"></a></li>
+                            <li><a href="#" class="icon-group"></a></li> -->
                         </ul>
                     </div>
                 </div>
@@ -82,7 +82,7 @@
                 		</ul>
                 	</div>
             	</div>
-            	<?php $dosql->Execute("SELECT * FROM v_db_infoarticle WHERE 1=1 AND delstate='false' AND checkinfo=true ORDER BY createtime DESC LIMIT 0,8");
+            	<?php $dosql->Execute("SELECT * FROM v_db_infoarticle WHERE 1=1 AND delstate='false' AND checkinfo=true ORDER BY createtime DESC LIMIT 0,20");
                     while($row = $dosql->GetArray())
                     {
                         //获取链接地址
@@ -100,7 +100,7 @@
                 			    <div class="inner-area-content">
                 				    <a href=""><h3><?php echo ReStrLen($row['title'],32); ?></h3></a>
                 				    <p><?php echo ReStrLen($row['description'],75); ?></p>
-                				    <p style="color: #777;font-size: 12px;margin: 30px 0 0 0;"><span style="margin-right: 10px;">2012-11-03</span><span style="margin-right: 10px;">浏览量：<?php echo $row['hits']; ?></span></p>
+                				    <p style="color: #777;font-size: 12px;margin: 30px 0 0 0;"><span style="margin-right: 10px;"><?php echo '20'.MyDate('y-m-d', $row['createtime']);?></span><span style="margin-right: 10px;">浏览量：<?php echo $row['hits']; ?></span></p>
                 				</div>    
                 			</div>
                 		</li>
@@ -132,6 +132,9 @@
 		</div>
 	</div>
 </div>
+<!-- 底部 start-->
+<?php require_once('footer.php'); ?>
+<!-- 底部 end-->
 <script src="js/subgroups.main.js"></script>
 <script src="js/subgroups.slides.js"></script>
 <script src="js/jquery.nav.js"></script>

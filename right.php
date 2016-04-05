@@ -71,3 +71,31 @@
 <div class="title tit-iworm">
     <span><i class="icon-th-large"></i></span><h3>推荐阅读</h3>
 </div>
+<ul>
+    <?php $dosql->Execute("SELECT * FROM v_db_infoarticle WHERE 1=1 AND delstate='false' AND checkinfo=true ORDER BY createtime DESC LIMIT 0,10");
+    while($row = $dosql->GetArray())
+    {
+        //获取链接地址
+        // if($row['linkurl']=='' and $cfg_isreurl!='Y')
+        //     $gourl = 'infocentshow.php?cid='.$row['classid'].'&id='.$row['id'].'???'.GetRandNum(15).'&&&'.GetRandStr(12).GetRandNum(3).'+++';
+        // else if($cfg_isreurl=='Y')
+        //     $gourl = 'infocentshow-'.$row['classid'].'-'.$row['id'].'-1.html';
+        // else
+        //     $gourl = $row['linkurl'];
+    ?>
+    <li>
+        <div class="image image-text-list">
+            <div class="inner-area-image"><img src="images/alt180x120.png" width="120px;" height="80px;"></div>
+            <div class="inner-area-content">
+                <a href=""><h3><?php echo ReStrLen($row['title'],25); ?></h3></a>
+                <p style="color: #777;font-size: 12px;"><span style="margin-right: 10px;"><?php echo '20'.MyDate('y-m-d', $row['createtime']);?></span><span style="margin-right: 10px;">浏览量：<?php echo $row['hits']; ?></span></p>
+            </div>    
+        </div>
+    </li>
+    <?php
+    }
+    ?>
+</ul>
+<div class="image">
+    <!-- <a href="#"><img src="images/alt640x640.png" alt="#"></a> -->
+</div>
