@@ -25,9 +25,9 @@ header("content-Type: text/html; charset=utf-8");
 
 $html = new HTMLI('http://www.100toutiao.com/index.php?m=Index&a=show&cat=3&id=56012');
 // $html->GetHTMLContent();
-$pattern = '/<meta[\s]+name=\"keywords\"[\s]+content=\"([\s\S]*?)\"[\s]+\/>/';
+// $pattern = '/<meta[\s]+name=\"keywords\"[\s]+content=\"([\s\S]*?)\"[\s]+\/>/';
 
-preg_match_all($pattern,$html->html,$matches);
-// print_r($matches);
-echo $matches[1][0];
+// preg_match_all($pattern,$html->html,$matches);
+// // print_r($matches);
+// echo $matches[1][0];
 ?>

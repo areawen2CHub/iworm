@@ -13,7 +13,11 @@ if($cfg_webswitch == 'N')
 	echo $cfg_switchshow.'<br /><br /><i>'.$cfg_webname.'</i>';
 	exit();
 }
-$html = new HTML('http://www.100toutiao.com/index.php?m=Index&a=show&cat=3&id=56072');
+$html = new HTML('http://www.100toutiao.com/index.php?m=Index&a=show&cat=3&id=56073');
+
+function StrIsExist($ostr,$str){
+        return false !== strpos($ostr,$str); 
+    }
 
 function GetHTMLImageOne($html){
 	// 图片存储路径
@@ -30,7 +34,6 @@ function GetHTMLImageOne($html){
 	}
 	// 获取抓取网页上的所有img
     preg_match_all('/[src=|data-mce-src=]\"([\S]*?.(png|jpg|jpeg|gif|bmp|swf|swc|psd|tiff|iff|jp2|jpx|jb2|jpc))\"/',$html->html,$ilist);
-    // preg_match_all('/data-mce-src=\"([\S]*?.(png|jpg|jpeg|gif|bmp|swf|swc|psd|tiff|iff|jp2|jpx|jb2|jpc))\"/',$html->html,$ilist2);
     // 定义图片数组
     $imglist = array();
     // 获取绝对路径
@@ -54,38 +57,64 @@ function GetHTMLImageOne($html){
     for($i=0;$i<count($imglist);$i++){
     	echo $imglist[$i].'<br />';
     }
-    // echo $imglist[0];
+    // 判断函数getimagesize是否存在;
     if(!function_exists(getimagesize)){
-    	throw new Exception('server not install getimagesize');  
+    	throw new Exception('server not install getimagesize!');  
         exit();
     }
+    // 定义筛选出的存储在本地图片路径
+    $ret_imgurl = '';
+    // 定义筛选出的远程图片路径
+    $nee_imgurl = '';
+    // 宽高比，默认为1
+    $imgwh = 1;
     // 挑选合适图片
     for($i=0; $i<count($imglist); $i++){
+    	// 获取图片名称
+    	$imgname = substr($imglist[$i], strrpos($imglist[$i], "/")+1);
+    	// // 去除后缀
+    	// $imgname = substr($imgname, 0,strpos($imgname, "."));
+    	// 获取主机名
+    	$imghost = substr($html->host, strpos($html->host, ".")+1);
+    	// 去除后缀
+    	$imghost = substr($imghost, 0,strrpos($imghost, '.'));
     	// 获取图片对象
-    	$imgobj = getimagesize($imglist[$i]);
+    	$imgobj  = getimagesize($imglist[$i]);
     	if(!empty($imgobj)){
-    	    // 获取图片格式
-            $ext = substr($imglist[$i],strrpos($imglist[$i], ".")); 
-            // 设置文件名称
-            $filename = $save_path.'/'.MyDate('ymdhis', GetMkTime(time())).$ext; 
-            // 获取图片
-            $img = file_get_contents($imglist[$i]);
-            // 保存图片；
-            file_put_contents($filename,$img);
+    		// 不选logo之类的图片
+    		if(!StrIsExist($imgname,'logo') && !StrIsExist($imgname,$imghost)){
+    			// 获取图片
+                $img = file_get_contents($imglist[$i]);
+    			// 获取图片大小
+    			$imgsize = strlen($img)/1024;
+    			// 获取图片宽度和高度
+    			$imgw  = $imgobj[0];
+    			$imgh  = $imgobj[1];
+    			if($imgsize < 200 && $imgw >= 120 && $imgh >= 80){
+    				if(abs($imgw/$imgh-1.5) <= $imgwh){
+    					$imgwh = abs($imgw/$imgh-1.5);
+    					$nee_imgurl = $imglist[$i];
+    				}
+    			}
+    		}
         }else{
         	continue;
         }
+        clearstatcache();
     }
-    // ob_start();
-    // readfile($imglist[0]);
-    // $img = ob_get_contents();
-    // ob_end_clean();
-    // $size = strlen($img);    
-
-    // $fp2=@fopen($filename, "a");
-    // fwrite($fp2,$img);
-    // fclose($fp2);
-    // print_r($imgobj);
+    if(!empty($nee_imgurl)){
+    	// 获取图片
+        $img = file_get_contents($nee_imgurl);
+        // 获取图片格式
+        $ext = substr($nee_imgurl,strrpos($nee_imgurl, ".")); 
+        // 设置文件名称
+        $filename = $save_path.'/'.MyDate('ymdhis', GetMkTime(time())).$ext; 
+        // 保存图片；
+        file_put_contents($filename,$img);
+        // 获取文件存储在本地路径
+        $ret_imgurl = $filename;
+    }
+    return $ret_imgurl;
 }
-@GetHTMLImageOne($html);
+echo @GetHTMLImageOne($html);
 ?>
