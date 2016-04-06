@@ -227,7 +227,8 @@ class HTML
             // 获取第一个字符
             $fchar = substr($ourl,0,1);
             // 这样的url不需要
-            if($ourl == '/' || $this->StrIsExist($ourl,'.css') || $this->StrIsExist($ourl,'.js') || $this->StrIsExist($ourl,'javascript') || $this->StrIsExist($ourl,'#') || empty($ourl)){
+            // 过滤掉带有单引号的url
+            if($ourl == '/' || $this->StrIsExist($ourl,'.css') || $this->StrIsExist($ourl,'.js') || $this->StrIsExist($ourl,'javascript') || $this->StrIsExist($ourl,'#') || $this->StrIsExist($ourl,"'") || empty($ourl)){
                 continue;
             }else if($fchar != 'h' && $fchar !='w' && $fchar != '/'){
                 continue;
@@ -501,15 +502,17 @@ class HTML
                     // 获取关键字
                     preg_match_all('/<meta[\s]+name=\"keywords\"[\s]+content=\"([\s\S]*?)\"[\s]*[\/]?>/', $this->html, $kwlist);
                     if(isset($kwlist[1][0])){
-                        $keywords = $kwlist[1][0];
+                        // 替换掉单引号
+                        $keywords = str_replace("'", '"', $kwlist[1][0]);
                     }else{
                         $keywords = '';
                     }
                     // 获取描述
                     preg_match_all('/<meta[\s]+name=\"description\"[\s]+content=\"([\s\S]*?)\"[\s]*[\/]?>/', $this->html, $deslist);
                     if(isset($deslist[1][0])){
-                        $description = $deslist[1][0];
-                        echo $description;
+                        // 替换掉单引号
+                        $description = str_replace("'", '"', $deslist[1][0]);
+                        // echo '关键字'.$description.'<br />';
                     }else{
                         $description = '';
                     }

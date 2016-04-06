@@ -22,7 +22,9 @@ $i = 0;
 $dosql->Execute("SELECT * FROM v_db_infourl WHERE 1=1 AND incstate='false' AND delstate='false' ORDER BY inctimes DESC LIMIT 0,1000");
 while($row = $dosql->GetArray())
 {
-	echo $row['id'];
+	if($i >= 10){
+		break;
+	}
 	$html = new HTML($row['url']);
     if($html->GetHTMLContent()){
 	    echo $i.')插入成功！<br />';

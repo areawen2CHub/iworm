@@ -13,7 +13,8 @@ if($cfg_webswitch == 'N')
 	echo $cfg_switchshow.'<br /><br /><i>'.$cfg_webname.'</i>';
 	exit();
 }
-$html = new HTML('http://ent.firefox.163.com/16/0406/07/R90Z1AYBKVIMQ67O.html');
+$html = new HTML('http://travel.163.com/15/0608/08/ARIUIJJC00064LRB.html');
+$html->GetHTMLContent();
 
 function StrIsExist($ostr,$str){
         return false !== strpos($ostr,$str); 
@@ -116,5 +117,5 @@ function GetHTMLImageOne($html){
     }
     return $ret_imgurl;
 }
-echo @GetHTMLImageOne($html);
+// echo @GetHTMLImageOne($html);
 ?>
