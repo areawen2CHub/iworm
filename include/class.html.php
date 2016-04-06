@@ -19,63 +19,71 @@ class HTML
 {
 	var $url;
 	var $html;
-    var $char;
+    var $charset;
     var $host;
 
-    // 构造函数初始化$url
+    // 初始化变量
+    function __construct($url){
+        // 初始化
+        $this->Initialise($url);
+    }
+
+    // 兼容低版本
 	function HTML($url){
+         $this->__construct($url);
+	}
+
+    // 初始化
+    function Initialise($url){
         // $url为空，则返回
         if(empty($url)){
             return false;
         }
         // 初始化$url
-		$this->url  = $url;
+        $this->url  = $url;
         // 初始化$html
-		$this->html = $this->GetHTML();
-        // 初始化$char
-        $this->char = $this->GetHTMLCharset();
-        // 如果$char为空，则返回
-        if(empty($this->char)){
-            return false;
+        $this->html = $this->GetHTMLObj();
+        if(!empty($this->html) && $this->html != false){
+            // 初始化$charset
+            $this->charset = $this->GetHTMLCharset();
+            // 转换charset
+            $this->ChangeHTMLCharset();
+            // 收录charset
+            $this->AddCharset(); 
+            // 初始化$host
+            $this->host = $this->GetUrlHost($url);   
+            // 不管该页面是否为需要的文章界面，都要将其中的url收集起来，作为下一次抓取的原url
+            // 获取html上所有的url
+            $allurl = $this->GetHTMLUrlAll(); 
+            // 已经收录的，增加收录次数，未收录的，收录进去
+            for($i=0; $i<count($allurl); $i++){
+                $this->AddUrl($allurl[$i]);
+            }
         }
-        // 转换charset
-        $this->ChangeHTMLCharset();
-        // 初始化$host
-        $this->host = $this->GetUrlHost($url);
-        // 收录charset
-        $this->AddCharset();
-
-        // 不管该页面是否为需要的文章界面，都要将其中的url收集起来，作为下一次抓取的原url
-        // 获取html上所有的url
-        $urlall = $this->GetHTMLUrlAll(); 
-        // 已经收录的，增加收录次数，未收录的，收录进去
-        for($i=0; $i<count($urlall); $i++){
-            $this->AddUrl($urlall[$i]);
-        } 
-	}
+    }
     /*
     * 函数说明：判断字符串中是否存在某个字符/字符串
     * 
     * @access  public
-    * @parame  $ostr     string  目标字符串
-    * @parame  $str        string  查询字符串
+    * @parame  $objstr     string  目标字符串
+    * @parame  $handstr    string  操作字符串
     * @return  fasle/true  bool    查询结果
     * @update  2016-03-28
     *
     */
-    function StrIsExist($ostr,$str){
-        return false !== strpos($ostr,$str); 
+    function JudgeStrIsExist($objstr,$handstr){
+        return false !== strpos($objstr,$handstr); 
     }
     /*
-    * 函数说明：抓取网页
+    * 函数说明：抓取网页，返回网页对象或者空或者false
     * 
     * @access  public
-    * @parame  $url        string  网页地址
-    * @return  $html       string  网页内容
+    * @parame  无        
+    * @return  $html       string  网页对象
     * @update  2016-03-29
     *
     */
-    function GetHTML(){
+    function GetHTMLObj(){
     	// 判断是否支持cURL
     	if (!function_exists('curl_init')) {  
             throw new Exception('server not install curl');  
@@ -95,7 +103,11 @@ class HTML
         $html = curl_exec($ch);    
         // echo $html;
         // 拆分$html
-        list($header, $html) = explode("\r\n\r\n", $html);    
+        if(isset($html)){
+            list($header, $html) = explode("\r\n\r\n", $html);   
+        }else{
+            $html = '';
+        }
 
         // 判断是否是跳转页面
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);  
@@ -117,21 +129,21 @@ class HTML
         return $html;
     }
     /*
-    * 函数说明：获取网页charset
+    * 函数说明：获取网页charset,返回charset值
     * 
     * @access  public
     * @parame  无
-    * @return  无
+    * @return  $cha        string 
     * @update  2016-03-29
     *
     */
     function GetHTMLCharset(){
         // 获取本页面上所有charset
-        preg_match_all('/charset=([\S]*)/',$this->html,$char);
+        preg_match_all('/charset=([\S]*)/',$this->html,$chalist);
         // 获取目标字符串
-        if(isset($char[1][0])){
+        if(isset($chalist[1][0])){
             // 如果存在，则提取出
-            $str = $char[1][0];
+            $str = $chalist[1][0];
             // 判断是单引号还是双引号
             if(strpos($str, '"') == 0){
                 $fpos = 1;
@@ -151,18 +163,18 @@ class HTML
             }    
             // 是否需要截取
             if($lpos > $fpos){
-                $char = substr($str, $fpos,$lpos);
+                $cha = substr($str, $fpos,$lpos);
             }else{
-                $char = $str;
+                $cha = $str;
             }
             // 如果获取的charset非法，则赋空
-            if(strlen($char)>6){
-                $char = '';
+            if(strlen($cha)>6){
+                $cha = '';
             }
         }else{
-            $char = '';
+            $cha = '';
         }    
-        return $char;
+        return $cha;
     }
     /*
     * 函数说明：改变网页charset
@@ -174,8 +186,32 @@ class HTML
     *
     */
     function ChangeHTMLCharset(){
-        if(!empty($this->char)){
-            $this->html = iconv($this->char , "utf-8//IGNORE" , $this->html);
+        if(!empty($this->charset)){
+            $this->html = iconv($this->charset , "utf-8//IGNORE" , $this->html);
+        }
+    }
+    /*
+    * 函数说明：插入charset
+    * 
+    * @access  public
+    * @parame  $url         string  需要插入的url
+    * @return  无
+    * @update  2016-03-29
+    *
+    */
+    function AddCharset(){    
+        global $dosql;    
+        $row = $dosql->GetOne("SELECT * FROM v_db_charset WHERE host='".$this->host."'");
+        // 检查是否存在
+        if(!is_array($row) && !empty($this->charset)){
+            // 如果不存在，则收录
+            $sql = "INSERT INTO v_db_charset (charset, host) VALUES ('".$this->charset."', '".$this->host."')";
+            if(!$dosql->ExecNoneQuery($sql)){
+                throw new Exception('AddCharset插入语句错误'.$sql);  
+                exit();
+            }
+        }else{
+            return false;
         }
     }
     /*
@@ -218,29 +254,29 @@ class HTML
     function GetHTMLUrlAll(){
     	// 获取抓取网页上的所有url
     	preg_match_all('/href=\"([\s\S]*?)\"/',$this->html,$alist);
-        // 定义存储a链接地址数组
-        $wo_alist = array();
+        // 定义存储有效链接地址数组
+        $eff_urllist = array();
         // 获取有用的url
         for($i=0,$j=0; $i<count($alist[1]);$i++){
             // 获取目标iurl
-            $ourl  = $alist[1][$i];
+            $ourl = $alist[1][$i];
             // 获取第一个字符
-            $fchar = substr($ourl,0,1);
+            $fcha = substr($ourl,0,1);
             // 这样的url不需要
             // 过滤掉带有单引号的url
-            if($ourl == '/' || $this->StrIsExist($ourl,'.css') || $this->StrIsExist($ourl,'.js') || $this->StrIsExist($ourl,'javascript') || $this->StrIsExist($ourl,'#') || $this->StrIsExist($ourl,"'") || empty($ourl)){
+            if($ourl == '/' || $this->JudgeStrIsExist($ourl,'.css') || $this->JudgeStrIsExist($ourl,'.js') || $this->JudgeStrIsExist($ourl,'javascript') || $this->JudgeStrIsExist($ourl,'#') || $this->JudgeStrIsExist($ourl,"'") || empty($ourl)){
                 continue;
-            }else if($fchar != 'h' && $fchar !='w' && $fchar != '/'){
+            }else if($fcha != 'h' && $fcha !='w' && $fcha != '/'){
                 continue;
-            }else if($fchar == '/'){
-                $wo_alist[$j] = 'http://'.$this->host.$ourl;
+            }else if($fcha == '/'){
+                $eff_urllist[$j] = 'http://'.$this->host.$ourl;
                 $j++;
             }else{
-                $wo_alist[$j] = $ourl;
+                $eff_urllist[$j] = $ourl;
                 $j++;
             }
         }
-        return $wo_alist;
+        return $eff_urllist;
     }
     /*
     * 函数说明：获取url中的主机
@@ -333,30 +369,6 @@ class HTML
     	}
     }
     /*
-    * 函数说明：插入charset
-    * 
-    * @access  public
-    * @parame  $url         string  需要插入的url
-    * @return  无
-    * @update  2016-03-29
-    *
-    */
-    function AddCharset(){    
-        global $dosql;    
-        $row = $dosql->GetOne("SELECT * FROM v_db_charset WHERE host='".$this->host."'");
-        // 检查是否存在
-        if(!is_array($row) && !empty($this->char)){
-            // 如果不存在，则收录
-            $sql = "INSERT INTO v_db_charset (charset, host) VALUES ('".$this->char."', '".$this->host."')";
-            if(!$dosql->ExecNoneQuery($sql)){
-                throw new Exception('AddCharset插入语句错误'.$sql);  
-                exit();
-            }
-        }else{
-            return false;
-        }
-    }
-    /*
     * 函数说明：获取网页上一张图片，用于前段缩略显示
     * 
     * @access  public
@@ -428,7 +440,7 @@ class HTML
             $imgobj  = @getimagesize($imglist[$i]);
             if(!empty($imgobj)){
                 // 不选logo之类的图片
-                if(!$this->StrIsExist($imgname,'logo') && !$this->StrIsExist($imgname,$imghost)){
+                if(!$this->JudgeStrIsExist($imgname,'logo') && !$this->JudgeStrIsExist($imgname,$imghost)){
                     // 获取图片
                     $img = file_get_contents($imglist[$i]);
                     // 获取图片大小
@@ -473,7 +485,7 @@ class HTML
     */
     function GetHTMLContent(){  
         // charset不能为空
-        if(!empty($this->char)){
+        if(!empty($this->charset)){
             // 获取title
             $title = $this->GetHTMLTitle(); 
             // 如果标题为空，直接跳出
@@ -491,7 +503,7 @@ class HTML
                 $content = '';
                 for($i=0;$i<count($plist);$i++){
                     for($j=0;$j<count($plist[$i]);$j++){
-                        if(!$this->StrIsExist($plist[$i][$j],'href=')){
+                        if(!$this->JudgeStrIsExist($plist[$i][$j],'href=')){
                             $content .= str_replace("'", '"', $plist[$i][$j]);
                         }
                     }
