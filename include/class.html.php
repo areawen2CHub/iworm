@@ -130,12 +130,8 @@ class HTML
         preg_match_all('/charset=([\S]*)/',$this->html,$char);
         // 获取目标字符串
         if(isset($char[1][0])){
+            // 如果存在，则提取出
             $str = $char[1][0];
-        }else{
-            $char = '';
-        }
-        // 如果存在，则提取charset
-        if(!empty($str)){
             // 判断是单引号还是双引号
             if(strpos($str, '"') == 0){
                 $fpos = 1;
@@ -159,8 +155,11 @@ class HTML
             }else{
                 $char = $str;
             }
-        }
-        if(strlen($char)>6){
+            // 如果获取的charset非法，则赋空
+            if(strlen($char)>6){
+                $char = '';
+            }
+        }else{
             $char = '';
         }    
         return $char;
@@ -194,17 +193,17 @@ class HTML
         // 获取匹配到的title
         if(isset($tlist[1][0])){
             $tit = $tlist[1][0]; 
+            // 去掉标题所属模块
+            if($tpos = stripos($tit, '_')){
+                $tit = substr($tit, 0,$tpos);
+            }else if($tpos = stripos($tit, '-')){
+                $tit = substr($tit, 0,$tpos);
+            }else{
+                $tit = $tit;
+            } 
         }else{
             $tit = ''; 
         }
-        // 去掉标题所属模块
-        if($tpos = stripos($tit, '_')){
-            $tit = substr($tit, 0,$tpos);
-        }else if($tpos = stripos($tit, '-')){
-            $tit = substr($tit, 0,$tpos);
-        }else{
-            $tit = $tit;
-        }    
         return $tit;
     }
     /*
@@ -326,12 +325,10 @@ class HTML
             $createtime = GetMkTime(time());    
 
             $sql = "INSERT INTO v_db_infourl (parenturl, url, urlip, urlhost, createtime, inctimes, incstate,delstate) VALUES ('".$this->url."', '".$url."', '".$ip."', '".$host."', '".$createtime."', 1, 'false','false')";
-            $dosql->ExecNoneQuery($sql);    
-
-         //    if($dosql->ExecNoneQuery($sql)){
-    		   //  header("location:$url");
-    		   //  exit();
-    	    // }
+            if(!$dosql->ExecNoneQuery($sql)){
+                throw new Exception('AddUrl插入语句错误'.$sql);  
+                exit();
+            }
     	}
     }
     /*
@@ -350,7 +347,10 @@ class HTML
         if(!is_array($row) && !empty($this->char)){
             // 如果不存在，则收录
             $sql = "INSERT INTO v_db_charset (charset, host) VALUES ('".$this->char."', '".$this->host."')";
-            $dosql->ExecNoneQuery($sql); 
+            if(!$dosql->ExecNoneQuery($sql)){
+                throw new Exception('AddCharset插入语句错误'.$sql);  
+                exit();
+            }
         }else{
             return false;
         }
@@ -499,18 +499,22 @@ class HTML
                     // 获取图片
                     $picurl = $this->GetHTMLImageOne();
                     // 获取关键字
-                    preg_match_all('/<meta[\s]+name=\"keywords\"[\s]+content=\"([\s\S]*?)\"[\s]+\/>/', $this->html, $kwlist);
+                    preg_match_all('/<meta[\s]+name=\"keywords\"[\s]+content=\"([\s\S]*?)\"[\s]*[\/]?>/', $this->html, $kwlist);
                     if(isset($kwlist[1][0])){
                         $keywords = $kwlist[1][0];
                     }else{
                         $keywords = '';
                     }
                     // 获取描述
-                    preg_match_all('/<meta[\s]+name=\"description\"[\s]+content=\"([\s\S]*?)\"[\s]+\/>/', $this->html, $deslist);
+                    preg_match_all('/<meta[\s]+name=\"description\"[\s]+content=\"([\s\S]*?)\"[\s]*[\/]?>/', $this->html, $deslist);
                     if(isset($deslist[1][0])){
                         $description = $deslist[1][0];
+                        echo $description;
                     }else{
                         $description = '';
+                    }
+                    if(empty($keywords) || empty($description)){
+                        return false;
                     }
                     // 创建时间
                     $createtime = GetMkTime(time()); 
@@ -524,7 +528,10 @@ class HTML
                     }else{
                         // 如果不存在，则收录
                         $sql = "INSERT INTO v_db_infoarticle (title, isoriginal, ourl, keywords, description, content, picurl, hits, orderid, createtime, checkinfo, delstate) VALUES ('".$title."', 'false', '".$this->url."', '".$keywords."', '".$description."', '".$content."', '".$picurl."', '".$hits."', '0', '".$createtime."', 'true', 'false')";
-                        $dosql->ExecNoneQuery($sql);
+                        if($dosql->ExecNoneQuery($sql)){
+                            throw new Exception('GetHTMLContent插入语句错误'.$sql);  
+                            exit();
+                        }
                         $retu = true; 
                     }
                 }else{
