@@ -18,12 +18,22 @@
 
 <?php
 // 抓取网页
-// UrlIsArticle('http://www.iyiou.com/');
-$html = new HTML('http://www.100toutiao.com/index.php?m=Index&a=show&cat=3&id=56073');
-echo $html->GetHTMLImageOne();
-// if($html->GetHTMLContent()){
-// 	echo '插入成功';
-// }
+$i = 0;
+$dosql->Execute("SELECT * FROM v_db_infourl WHERE 1=1 AND incstate='false' AND delstate='false' ORDER BY inctimes DESC LIMIT 0,1000");
+while($row = $dosql->GetArray())
+{
+	echo $row['id'];
+	$html = new HTML($row['url']);
+    if($html->GetHTMLContent()){
+	    echo $i.')插入成功！<br />';
+	    $i++;
+    }else{
+	    echo $row['id'].'插入失败！<br />';
+	    $dosql->ExecNoneQuery("UPDATE v_db_infourl SET delstate=true WHERE id='".$row['id']."'");
+
+    }
+    $dosql->ExecNoneQuery("UPDATE v_db_infourl SET incstate=true WHERE id='".$row['id']."'");
+}
 ?>
 </body>
 </html>

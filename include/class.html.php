@@ -159,6 +159,9 @@ class HTML
             }else{
                 $char = $str;
             }
+        }
+        if(strlen($char)>6){
+            $char = '';
         }    
         return $char;
     }
@@ -375,7 +378,7 @@ class HTML
             }
         }
         // 获取抓取网页上的所有img
-        preg_match_all('/[src=|data-mce-src=]\"([\S]*?.(png|jpg|jpeg|gif|bmp|swf|swc|psd|tiff|iff|jp2|jpx|jb2|jpc))\"/',$this->html,$ilist);
+        preg_match_all('/[src=|data-mce-src=][\"|\']([\S]*?.(png|jpg|jpeg|gif|bmp|swf|swc|psd|tiff|iff|jp2|jpx|jb2|jpc))[\"|\']/',$this->html,$ilist);
         // 定义图片数组
         $imglist = array();
         // 获取绝对路径
@@ -472,53 +475,70 @@ class HTML
         if(!empty($this->char)){
             // 获取title
             $title = $this->GetHTMLTitle(); 
+            // 如果标题为空，直接跳出
+            if(empty($title)){
+                return false;
+            }
             // 判断标题出现的次数
             $times = substr_count($this->html, $title);
             // $title必须出现2-4次，再多可能就是首页了
-            if($times>1 && $times<5){
+            if($times>=1 && $times<5){
                 // 获取p标签的内容
                 // preg_match_all( '/<p[\s\S]*>[\s\S]*<\/p>/' , $this->html , $plist );
                 preg_match_all( '/<p>.*<\/p>/' , $this->html , $plist );
                 // print_r($plist);
-                $content = $plist[0][0];
-                // 获取关键字
-                preg_match_all('/<meta[\s]+name=\"keywords\"[\s]+content=\"([\s\S]*?)\"[\s]+\/>/', $this->html, $kwlist);
-                if(isset($kwlist[1][0])){
-                    $keywords = $kwlist[1][0];
-                }else{
-                    $keywords = '';
+                $content = '';
+                for($i=0;$i<count($plist);$i++){
+                    for($j=0;$j<count($plist[$i]);$j++){
+                        if(!$this->StrIsExist($plist[$i][$j],'href=')){
+                            $content .= str_replace("'", '"', $plist[$i][$j]);
+                        }
+                    }
                 }
-                // 获取描述
-                preg_match_all('/<meta[\s]+name=\"description\"[\s]+content=\"([\s\S]*?)\"[\s]+\/>/', $this->html, $deslist);
-                if(isset($deslist[1][0])){
-                    $description = $deslist[1][0];
-                }else{
-                    $description = '';
-                }
-                // 创建时间
-                $createtime = GetMkTime(time()); 
-                // 点击量
-                $hits = mt_rand(50,100);
-                global $dosql;    
-                $row = $dosql->GetOne("SELECT * FROM v_db_infoarticle WHERE ourl='".$this->url."'");
-                // 如果已存在，则退出
-                if(is_array($row)){
-                    $retu = fasle;
-                }else{
+                if(strlen($content)>=1000){
+                    // 获取图片
+                    $picurl = $this->GetHTMLImageOne();
+                    // 获取关键字
+                    preg_match_all('/<meta[\s]+name=\"keywords\"[\s]+content=\"([\s\S]*?)\"[\s]+\/>/', $this->html, $kwlist);
+                    if(isset($kwlist[1][0])){
+                        $keywords = $kwlist[1][0];
+                    }else{
+                        $keywords = '';
+                    }
+                    // 获取描述
+                    preg_match_all('/<meta[\s]+name=\"description\"[\s]+content=\"([\s\S]*?)\"[\s]+\/>/', $this->html, $deslist);
+                    if(isset($deslist[1][0])){
+                        $description = $deslist[1][0];
+                    }else{
+                        $description = '';
+                    }
+                    // 创建时间
+                    $createtime = GetMkTime(time()); 
+                    // 点击量
+                    $hits = mt_rand(50,100);
+                    global $dosql;    
+                    $row = $dosql->GetOne("SELECT * FROM v_db_infoarticle WHERE ourl='".$this->url."'");
+                    // 如果已存在，则退出
+                    if(is_array($row)){
+                        $retu = false;
+                    }else{
                         // 如果不存在，则收录
-                        $sql = "INSERT INTO v_db_infoarticle (title, isoriginal, ourl, keywords, description, content, hits, orderid, createtime, checkinfo, delstate) VALUES ('".$title."', 'false', '".$this->url."', '".$keywords."', '".$description."', '".$content."', '".$hits."', '0', '".$createtime."', 'true', 'false')";
-                        $dosql->ExecNoneQuery($sql); 
+                        $sql = "INSERT INTO v_db_infoarticle (title, isoriginal, ourl, keywords, description, content, picurl, hits, orderid, createtime, checkinfo, delstate) VALUES ('".$title."', 'false', '".$this->url."', '".$keywords."', '".$description."', '".$content."', '".$picurl."', '".$hits."', '0', '".$createtime."', 'true', 'false')";
+                        $dosql->ExecNoneQuery($sql);
+                        $retu = true; 
+                    }
+                }else{
+                    $retu = false;
                 }
+                
+            }else{
+                $retu = false;
             }
-            
             // echo $title;
             // echo $times;
-
-            $retu = true;
         }else{
-            $retu = fasle;
+            $retu = false;
         } 
-
         return $retu;  
     }
 }

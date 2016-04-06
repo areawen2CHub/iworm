@@ -9,22 +9,22 @@
 	<div class="row">
         <div class="col-md-3 col-sm-3 col-xs-3">
             <div class="image radius-all-px-5">
-                <a href="#"><img src="images/weibo.png" alt="#" width="50px" height="50px"></a>
+                <a href="#"><img src="images/qqkj.png" alt="#" width="52px" height="52px"></a>
             </div>
         </div>
         <div class="col-md-3 col-sm-3 col-xs-3">
             <div class="image radius-all-px-5">
-                <a href="#"><img src="images/weibo.png" alt="#" width="50px" height="50px"></a>
+                <a href="#"><img src="images/weixin.png" alt="#" width="52px" height="52px"></a>
             </div>
         </div>
         <div class="col-md-3 col-sm-3 col-xs-3">
             <div class="image radius-all-px-5">
-                <a href="#"><img src="images/weibo.png" alt="#" width="50px" height="50px"></a>
+                <a href="#"><img src="images/weibo.png" alt="#" width="52px" height="52px"></a>
             </div>
         </div>
         <div class="col-md-3 col-sm-3 col-xs-3">
             <div class="image radius-all-px-5">
-                <a href="#"><img src="images/weibo.png" alt="#" width="50px" height="50px"></a>
+                <a href="#"><img src="images/txwb.png" alt="#" width="52px" height="52px"></a>
             </div>
         </div>
     </div>
@@ -52,15 +52,10 @@
             $dosql->Execute("SELECT * FROM v_db_infoarticle WHERE 1=1 AND delstate='false' AND checkinfo=true AND createtime>'$time' ORDER BY hits DESC LIMIT 0,9");
             while($row = $dosql->GetArray())
             {
-                //获取链接地址
-                // if($row['linkurl']=='' and $cfg_isreurl!='Y')
-                //     $gourl = 'infocentshow.php?cid='.$row['classid'].'&id='.$row['id'].'???'.GetRandNum(15).'&&&'.GetRandStr(12).GetRandNum(3).'+++';
-                // else if($cfg_isreurl=='Y')
-                //     $gourl = 'infocentshow-'.$row['classid'].'-'.$row['id'].'-1.html';
-                // else
-                //     $gourl = $row['linkurl'];
+                // 获取链接地址
+                $linkurl = 'index.php???&cid='.GetRandNum(2).'&id='.$row['id'].'###'.GetRandStr(40).'???&id='.GetRandNum(2).'???'.GetRandStr(20).'+++';
             ?>
-    	        <li><span class="squ radius-all-px-2 <?php if($i==1 || $i==2 || $i==3) echo 'hot';?>"><?php echo $i; ?></span><a href=""><?php echo ReStrLen($row['title'],22); ?></a></li>
+    	        <li><span class="squ radius-all-px-2 <?php if($i==1 || $i==2 || $i==3) echo 'hot';?>"><?php echo $i; ?></span><a href="<?php echo $linkurl; ?>"><?php echo ReStrLen($row['title'],22); ?></a></li>
             <?php
                 $i++;
             }
@@ -72,22 +67,22 @@
     <span><i class="icon-th-large"></i></span><h3>推荐阅读</h3>
 </div>
 <ul>
-    <?php $dosql->Execute("SELECT * FROM v_db_infoarticle WHERE 1=1 AND delstate='false' AND checkinfo=true ORDER BY createtime DESC LIMIT 0,10");
+    <?php $dosql->Execute("SELECT * FROM v_db_infoarticle WHERE 1=1 AND delstate='false' AND picurl !='' AND checkinfo=true ORDER BY createtime DESC LIMIT 0,10");
     while($row = $dosql->GetArray())
     {
-        //获取链接地址
-        // if($row['linkurl']=='' and $cfg_isreurl!='Y')
-        //     $gourl = 'infocentshow.php?cid='.$row['classid'].'&id='.$row['id'].'???'.GetRandNum(15).'&&&'.GetRandStr(12).GetRandNum(3).'+++';
-        // else if($cfg_isreurl=='Y')
-        //     $gourl = 'infocentshow-'.$row['classid'].'-'.$row['id'].'-1.html';
-        // else
-        //     $gourl = $row['linkurl'];
+        // 获取链接地址
+        $linkurl = 'index.php???&cid='.GetRandNum(2).'&id='.$row['id'].'###'.GetRandStr(40).'???&id='.GetRandNum(2).'???'.GetRandStr(20).'+++';
+        // 获取图片
+        if($row['picurl']!='')
+            $picurl = $row['picurl'];
+        else
+            $picurl = 'images/alt180x120.png';
     ?>
     <li>
         <div class="image image-text-list">
-            <div class="inner-area-image"><img src="images/alt180x120.png" width="120px;" height="80px;"></div>
+            <div class="inner-area-image"><img src="<?php echo $picurl;?>" width="120px;" height="80px;"></div>
             <div class="inner-area-content">
-                <a href=""><h3><?php echo ReStrLen($row['title'],25); ?></h3></a>
+                <a href="<?php echo $linkurl; ?>"><h3><?php echo ReStrLen($row['title'],25); ?></h3></a>
                 <p style="color: #777;font-size: 12px;"><span style="margin-right: 10px;"><?php echo '20'.MyDate('y-m-d', $row['createtime']);?></span><span style="margin-right: 10px;">浏览量：<?php echo $row['hits']; ?></span></p>
             </div>    
         </div>

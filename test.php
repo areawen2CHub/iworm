@@ -13,7 +13,7 @@ if($cfg_webswitch == 'N')
 	echo $cfg_switchshow.'<br /><br /><i>'.$cfg_webname.'</i>';
 	exit();
 }
-$html = new HTML('http://www.100toutiao.com/index.php?m=Index&a=show&cat=3&id=56073');
+$html = new HTML('http://ent.firefox.163.com/16/0406/07/R90Z1AYBKVIMQ67O.html');
 
 function StrIsExist($ostr,$str){
         return false !== strpos($ostr,$str); 
@@ -33,7 +33,7 @@ function GetHTMLImageOne($html){
 		}
 	}
 	// 获取抓取网页上的所有img
-    preg_match_all('/[src=|data-mce-src=]\"([\S]*?.(png|jpg|jpeg|gif|bmp|swf|swc|psd|tiff|iff|jp2|jpx|jb2|jpc))\"/',$html->html,$ilist);
+    preg_match_all('/[src=|data-mce-src=][\"|\']([\S]*?.(png|jpg|jpeg|gif|bmp|swf|swc|psd|tiff|iff|jp2|jpx|jb2|jpc))[\"|\']/',$html->html,$ilist);
     // 定义图片数组
     $imglist = array();
     // 获取绝对路径
@@ -90,7 +90,7 @@ function GetHTMLImageOne($html){
     			// 获取图片宽度和高度
     			$imgw  = $imgobj[0];
     			$imgh  = $imgobj[1];
-    			if($imgsize < 200 && $imgw >= 120 && $imgh >= 80){
+    			if($imgsize < 500 && $imgw >= 120 && $imgh >= 80){
     				if(abs($imgw/$imgh-1.5) <= $imgwh){
     					$imgwh = abs($imgw/$imgh-1.5);
     					$nee_imgurl = $imglist[$i];

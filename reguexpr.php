@@ -23,11 +23,26 @@ header("content-Type: text/html; charset=utf-8");
 
 // print_r($matches);
 
-$html = new HTMLI('http://www.100toutiao.com/index.php?m=Index&a=show&cat=3&id=56012');
+$html = new HTMLI('http://shehui.firefox.163.com/16/0405/22/LX8DN1WO92Q0GYVJ.html');
 // $html->GetHTMLContent();
-// $pattern = '/<meta[\s]+name=\"keywords\"[\s]+content=\"([\s\S]*?)\"[\s]+\/>/';
+$pattern = '/<p>.*<\/p>/';
 
-// preg_match_all($pattern,$html->html,$matches);
-// // print_r($matches);
-// echo $matches[1][0];
+ function StrIsExist($ostr,$str){
+        return false !== strpos($ostr,$str); 
+    }
+preg_match_all($pattern,$html->html,$matches);
+// print_r($matches);
+$content = '';
+for($i=0;$i<count($matches);$i++){
+	for($j=0;$j<count($matches[$i]);$j++){
+		if(!StrIsExist($matches[$i][$j],'href=')){
+			$content .= str_replace("'", '"', $matches[$i][$j]);
+		}
+	}
+}
+if(strlen($content) < 1000){
+	echo '非适合文章';
+}else{
+	echo $content;
+}
 ?>

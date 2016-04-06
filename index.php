@@ -82,31 +82,23 @@
                 		</ul>
                 	</div>
             	</div>
-            	<?php $dosql->Execute("SELECT * FROM v_db_infoarticle WHERE 1=1 AND delstate='false' AND checkinfo=true ORDER BY createtime DESC LIMIT 0,20");
-                    while($row = $dosql->GetArray())
-                    {
-                        //获取链接地址
-                        // if($row['linkurl']=='' and $cfg_isreurl!='Y')
-                        //     $gourl = 'infocentshow.php?cid='.$row['classid'].'&id='.$row['id'].'???'.GetRandNum(15).'&&&'.GetRandStr(12).GetRandNum(3).'+++';
-                        // else if($cfg_isreurl=='Y')
-                        //     $gourl = 'infocentshow-'.$row['classid'].'-'.$row['id'].'-1.html';
-                        // else
-                        //     $gourl = $row['linkurl'];
-                    ?>
-        			<ul>
-                		<li style="padding: 3px 0;">
-                			<div class="image image-text-list">
-                			    <div class="inner-area-image"><img src="images/alt180x120.png" width="180px;" height="120px;"></div>
-                			    <div class="inner-area-content">
-                				    <a href=""><h3><?php echo ReStrLen($row['title'],32); ?></h3></a>
-                				    <p><?php echo ReStrLen($row['description'],75); ?></p>
-                				    <p style="color: #777;font-size: 12px;margin: 30px 0 0 0;"><span style="margin-right: 10px;"><?php echo '20'.MyDate('y-m-d', $row['createtime']);?></span><span style="margin-right: 10px;">浏览量：<?php echo $row['hits']; ?></span></p>
-                				</div>    
-                			</div>
-                		</li>
-                	</ul>
-                <?php
+            	<?php 
+                if(isset($_GET['id'])){
+                    $id = $_GET['id'];
+                    //增加一次点击量
+                    $dosql->ExecNoneQuery("UPDATE v_db_infoarticle SET hits=hits+1 WHERE id='".$id."'");
+                    $row = $dosql->GetOne("SELECT * FROM v_db_infoarticle WHERE id='".$id."'");
+                    if(isset($row)){
+                        echo '<div class="content"><div class="title"><h2>'.$row['title'].'</h2></div><div class="date"><span>更新时间：20'.MyDate('y-m-d', $row['createtime']).'</span><span>阅读量：'.$row['hits'].'</span></div><p>'.$row['content'].'</p></div>';
+                    }else{
+                        echo '<p>资料更新中...</p>';
                     }
+                }else if(isset($_POST['keywords'])){
+                    // $keywords = htmlspecialchars($_POST['keywords']);
+                    // $dopage->GetPage("SELECT * FROM ymkj_job WHERE checkinfo=true AND title LIKE '%$keywords%' ORDER BY orderid DESC",7);
+                }else{
+                    require_once('content.php'); 
+                }
                 ?>
         	</div>
         	<div class="col-md-4"><?php require_once('right.php'); ?></div>
@@ -114,24 +106,6 @@
     </div>
 </div>
 <!-- mainbody end -->
-<div class="container">
-<!--     <div class="blank-120"></div>
-    <div class="blank-60"></div>
-	<div class="row" style="border:solid 0px red;">
-		<form class="form-inline" method="post" action="search.php">
-            <div class="form-group">
-                <input type="text" class="form-control" id="keywordsid" name="keywords" placeholder="关键字..." value="<?php if(isset($keywords)){echo $keywords;} ?>">
-                <button type="submit" class="btn btn-search"><i class="icon-search"></i></button>
-            </div>
-            <div class="hotwords"><span>吴奇隆刘诗诗婚礼</span><span>任贤齐</span><span>太阳的后裔</span><span>莱昂纳多写书法</span></div>
-        </form>
-	</div> -->
-	<div class="row">
-		<div class="col-md-12">
-		
-		</div>
-	</div>
-</div>
 <!-- 底部 start-->
 <?php require_once('footer.php'); ?>
 <!-- 底部 end-->

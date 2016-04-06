@@ -110,6 +110,48 @@ if(!function_exists('ReStrLen'))
 		return $restr;
 	}
 }
+//获取指定长度随机字符串
+if(!function_exists('GetRandStr'))
+{
+	function GetRandStr($length=6)
+	{
+		//'!@#$%^&*()-_ []{}<>~`+=,.;:/?|';
+		$chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+		$random_str = '';
+	
+		for($i=0; $i<$length; $i++)
+		{
+			//这里提供两种字符获取方式
+			//第一种是使用 substr 截取$chars中的任意一位字符；
+			//第二种是取字符数组 $chars 的任意元素
+			//$password .= substr($chars, mt_rand(0, strlen($chars) - 1), 1);
+			$random_str .= $chars[mt_rand(0, strlen($chars) - 1)];
+		}
+	
+		return $random_str;
+	}
+}
+//获取指定长度随机数字
+if(!function_exists('GetRandNum'))
+{
+	function GetRandNum($length=6)
+	{
+		//'!@#$%^&*()-_ []{}<>~`+=,.;:/?|';
+		$chars = '0123456789';
+		$random_str = '';
+	
+		for($i=0; $i<$length; $i++)
+		{
+			//这里提供两种字符获取方式
+			//第一种是使用 substr 截取$chars中的任意一位字符；
+			//第二种是取字符数组 $chars 的任意元素
+			//$password .= substr($chars, mt_rand(0, strlen($chars) - 1), 1);
+			$random_str .= $chars[mt_rand(0, strlen($chars) - 1)];
+		}
+	
+		return $random_str;
+	}
+}
 //获得当前的页面文件的url
 if(!function_exists('GetCurUrl'))
 {

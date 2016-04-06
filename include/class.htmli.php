@@ -17,21 +17,21 @@ person: zhang
 
 class HTMLI
 {
-	var $url;
-	var $html;
+    var $url;
+    var $html;
     var $char;
     var $host;
 
     // 构造函数初始化$url
-	function HTMLI($url){
+    function HTMLI($url){
         // $url为空，则返回
         if(empty($url)){
             return false;
         }
         // 初始化$url
-		$this->url  = $url;
+        $this->url  = $url;
         // 初始化$html
-		$this->html = $this->GetHTML();
+        $this->html = $this->GetHTML();
         // 初始化$char
         $this->char = $this->GetHTMLCharset();
         // 如果$char为空，则返回
@@ -43,16 +43,16 @@ class HTMLI
         // 初始化$host
         $this->host = $this->GetUrlHost($url);
         // 收录charset
-        // $this->AddCharset();
+        $this->AddCharset();
 
         // 不管该页面是否为需要的文章界面，都要将其中的url收集起来，作为下一次抓取的原url
         // 获取html上所有的url
-        // $urlall = $this->GetHTMLUrlAll(); 
-        // // 已经收录的，增加收录次数，未收录的，收录进去
-        // for($i=0; $i<count($urlall); $i++){
-        //     $this->AddUrl($urlall[$i]);
-        // } 
-	}
+        $urlall = $this->GetHTMLUrlAll(); 
+        // 已经收录的，增加收录次数，未收录的，收录进去
+        for($i=0; $i<count($urlall); $i++){
+            $this->AddUrl($urlall[$i]);
+        } 
+    }
     /*
     * 函数说明：判断字符串中是否存在某个字符/字符串
     * 
@@ -76,19 +76,19 @@ class HTMLI
     *
     */
     function GetHTML(){
-    	// 判断是否支持cURL
-    	if (!function_exists('curl_init')) {  
+        // 判断是否支持cURL
+        if (!function_exists('curl_init')) {  
             throw new Exception('server not install curl');  
             exit();
         } 
-    	// 初始化一个cURL对象
-    	$ch = curl_init();
-    	// 抓取结果不直接输出
+        // 初始化一个cURL对象
+        $ch = curl_init();
+        // 抓取结果不直接输出
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);  
         // 设置HEADER
         curl_setopt($ch, CURLOPT_HEADER, 1);  
         // 需要抓取的url
-    	curl_setopt ($ch, CURLOPT_URL, $this->url);
+        curl_setopt ($ch, CURLOPT_URL, $this->url);
         // 设置超时
         curl_setopt($ch, CURLOPT_TIMEOUT, 30); 
         // 运行URL，获取页面
@@ -214,8 +214,8 @@ class HTMLI
     *
     */
     function GetHTMLUrlAll(){
-    	// 获取抓取网页上的所有url
-    	preg_match_all('/href=\"([\s\S]*?)\"/',$this->html,$alist);
+        // 获取抓取网页上的所有url
+        preg_match_all('/href=\"([\s\S]*?)\"/',$this->html,$alist);
         // 定义存储a链接地址数组
         $wo_alist = array();
         // 获取有用的url
@@ -294,8 +294,8 @@ class HTMLI
     *
     */
     function GetHostIP($host){
-    	$ip = gethostbyname($host);
-    	return $ip;
+        $ip = gethostbyname($host);
+        return $ip;
     }
     /*
     * 函数说明：插入url
@@ -307,13 +307,13 @@ class HTMLI
     *
     */
     function AddUrl($url){    
-    	global $dosql;    
-    	$row = $dosql->GetOne("SELECT * FROM v_db_infourl WHERE url='".$url."'");
-    	// 检查是否存在
-    	if(is_array($row)){
-    		// 如果存在，增加一次收录
+        global $dosql;    
+        $row = $dosql->GetOne("SELECT * FROM v_db_infourl WHERE url='".$url."'");
+        // 检查是否存在
+        if(is_array($row)){
+            // 如果存在，增加一次收录
             $dosql->ExecNoneQuery("UPDATE v_db_infourl SET inctimes=inctimes+1 WHERE url='".$url."'");
-    	}else{
+        }else{
             // 如果不存在，则收录该url
             // 获取主机
             $host = $this->GetUrlHost($url);
@@ -326,10 +326,10 @@ class HTMLI
             $dosql->ExecNoneQuery($sql);    
 
          //    if($dosql->ExecNoneQuery($sql)){
-    		   //  header("location:$url");
-    		   //  exit();
-    	    // }
-    	}
+               //  header("location:$url");
+               //  exit();
+            // }
+        }
     }
     /*
     * 函数说明：插入charset
@@ -353,6 +353,112 @@ class HTMLI
         }
     }
     /*
+    * 函数说明：获取网页上一张图片，用于前段缩略显示
+    * 
+    * @access  public
+    * @parame  无
+    * @return  $ret_imgurl   string    图片存储在本地的位置     
+    * @update  2016-04-06
+    *
+    */
+    function GetHTMLImageOne(){
+        // 图片存储路径
+        $save_path = 'uploads/image/';
+        // 以年月日为文件夹名称
+        $file_name = MyDate('ymd', GetMkTime(time()));
+        $save_path .='20'.$file_name;
+        //如果不存在，则创建
+        if(!is_dir($save_path)){  
+            $res=mkdir($save_path,0777,true); 
+            if(!$res){
+                return false;
+            }
+        }
+        // 获取抓取网页上的所有img
+        preg_match_all('/[src=|data-mce-src=]\"([\S]*?.(png|jpg|jpeg|gif|bmp|swf|swc|psd|tiff|iff|jp2|jpx|jb2|jpc))\"/',$this->html,$ilist);
+        // 定义图片数组
+        $imglist = array();
+        // 获取绝对路径
+        for($i=0,$j=0; $i<count($ilist[1]);$i++){
+            // 获取第一个字符
+            $fchar = substr($ilist[1][$i],0,1);
+            // 获取图片格式
+            $isty = substr($ilist[1][$i],strrpos($ilist[1][$i], ".")+1);
+            // 判断格式是否正确
+            if($isty=='png'||$isty=='jpg'||$isty=='jpeg'||$isty=='gif'||$isty=='bmp'||$isty=='swf'||$isty=='swc'||$isty=='psd'||$isty=='tiff'||$isty=='iff'||$isty=='jp2'||$isty=='jpx'||$isty=='jb2'||$isty=='jpc'){
+                if($fchar == 'w'){
+                    $imglist[$j] = 'http://'.$ilist[1][$i];
+                }else if($fchar == '/'){
+                    $imglist[$j] = 'http://'.$this->host.$ilist[1][$i];
+                }else{
+                    $imglist[$j] = $ilist[1][$i];
+                }
+                $j++;
+            }
+        }
+        // for($i=0;$i<count($imglist);$i++){
+        //     echo $imglist[$i].'<br />';
+        // }
+        // 判断函数getimagesize是否存在;
+        if(!function_exists('getimagesize')){
+            throw new Exception('server not install getimagesize!');  
+            exit();
+        }
+        // 定义筛选出的存储在本地图片路径
+        $ret_imgurl = '';
+        // 定义筛选出的远程图片路径
+        $nee_imgurl = '';
+        // 宽高比，默认为1
+        $imgwh = 1;
+        // 挑选合适图片
+        for($i=0; $i<count($imglist); $i++){
+            // 获取图片名称
+            $imgname = substr($imglist[$i], strrpos($imglist[$i], "/")+1);
+            // // 去除后缀
+            // $imgname = substr($imgname, 0,strpos($imgname, "."));
+            // 获取主机名
+            $imghost = substr($this->host, strpos($this->host, ".")+1);
+            // 去除后缀
+            $imghost = substr($imghost, 0,strrpos($imghost, '.'));
+            // 获取图片对象
+            $imgobj  = @getimagesize($imglist[$i]);
+            if(!empty($imgobj)){
+                // 不选logo之类的图片
+                if(!$this->StrIsExist($imgname,'logo') && !$this->StrIsExist($imgname,$imghost)){
+                    // 获取图片
+                    $img = file_get_contents($imglist[$i]);
+                    // 获取图片大小
+                    $imgsize = strlen($img)/1024;
+                    // 获取图片宽度和高度
+                    $imgw  = $imgobj[0];
+                    $imgh  = $imgobj[1];
+                    if($imgsize < 200 && $imgw >= 120 && $imgh >= 80){
+                        if(abs($imgw/$imgh-1.5) <= $imgwh){
+                            $imgwh = abs($imgw/$imgh-1.5);
+                            $nee_imgurl = $imglist[$i];
+                        }
+                    }
+                }
+            }else{
+                continue;
+            }
+            clearstatcache();
+        }
+        if(!empty($nee_imgurl)){
+            // 获取图片
+            $img = file_get_contents($nee_imgurl);
+            // 获取图片格式
+            $ext = substr($nee_imgurl,strrpos($nee_imgurl, ".")); 
+            // 设置文件名称
+            $filename = $save_path.'/'.MyDate('ymdhis', GetMkTime(time())).$ext; 
+            // 保存图片；
+            file_put_contents($filename,$img);
+            // 获取文件存储在本地路径
+            $ret_imgurl = $filename;
+        }
+        return $ret_imgurl;
+    }
+    /*
     * 函数说明：获取网页内容，如果是文章，则收录，并返回true，如果非文章，返回false
     * 
     * @access  public
@@ -372,22 +478,47 @@ class HTMLI
             if($times>1 && $times<5){
                 // 获取p标签的内容
                 // preg_match_all( '/<p[\s\S]*>[\s\S]*<\/p>/' , $this->html , $plist );
-                preg_match_all( '%<p>(.*?)</p>%si' , $this->html , $plist );
-                print_r($plist);
-                // echo $plist[0][0];
-                // for($i=0; $i<count($plist); $i++){
-                //     echo $plist[0][$i];
-                // }
+                preg_match_all( '/<p>.*<\/p>/' , $this->html , $plist );
+                // print_r($plist);
+                $content = $plist[0][0];
+                // 获取图片
+                $picurl = $this->GetHTMLImageOne();
+                // 获取关键字
+                preg_match_all('/<meta[\s]+name=\"keywords\"[\s]+content=\"([\s\S]*?)\"[\s]+\/>/', $this->html, $kwlist);
+                if(isset($kwlist[1][0])){
+                    $keywords = $kwlist[1][0];
+                }else{
+                    $keywords = '';
+                }
+                // 获取描述
+                preg_match_all('/<meta[\s]+name=\"description\"[\s]+content=\"([\s\S]*?)\"[\s]+\/>/', $this->html, $deslist);
+                if(isset($deslist[1][0])){
+                    $description = $deslist[1][0];
+                }else{
+                    $description = '';
+                }
+                // 创建时间
+                $createtime = GetMkTime(time()); 
+                // 点击量
+                $hits = mt_rand(50,100);
+                global $dosql;    
+                $row = $dosql->GetOne("SELECT * FROM v_db_infoarticle WHERE ourl='".$this->url."'");
+                // 如果已存在，则退出
+                if(is_array($row)){
+                    $retu = fasle;
+                }else{
+                    // 如果不存在，则收录
+                    $sql = "INSERT INTO v_db_infoarticle (title, isoriginal, ourl, keywords, description, content, picurl, hits, orderid, createtime, checkinfo, delstate) VALUES ('".$title."', 'false', '".$this->url."', '".$keywords."', '".$description."', '".$content."', '".$picurl."', '".$hits."', '0', '".$createtime."', 'true', 'false')";
+                    $dosql->ExecNoneQuery($sql); 
+                }
             }
-            
             // echo $title;
             // echo $times;
-
             $retu = true;
         }else{
             $retu = fasle;
         } 
-        
+
         return $retu;  
     }
 }
