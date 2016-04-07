@@ -602,7 +602,7 @@ class HTML
                             global $dosql;    
                             // $row = $dosql->GetOne("SELECT * FROM v_db_url WHERE url='".$this->url."'");
                             // 收录
-                            $sql = "INSERT INTO v_db_article (title, isoriginal, urlid, keywords, description, content, picurl, hits, orderid, createtime) 
+                            $sql = "INSERT INTO v_db_infolist (title, isoriginal, urlid, keywords, description, content, picurl, hits, orderid, createtime) 
                             VALUES ('".$title."', 'false', '".$this->id."', '".$keywords."', '".$description."', '".$content."', '".$picurl."', '".$hits."', '0', '".$createtime."')";
                             if(!$dosql->ExecNoneQuery($sql)){
                                 throw new Exception('GetHTMLContent插入语句错误'.$sql);  
