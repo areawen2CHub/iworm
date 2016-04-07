@@ -49,7 +49,7 @@
             $time = GetMkTime(time())-24*3600;
             // 定义排名
             $i = 1;
-            $dosql->Execute("SELECT * FROM v_db_infoarticle WHERE 1=1 AND delstate='false' AND checkinfo=true AND createtime>'$time' ORDER BY hits DESC LIMIT 0,9");
+            $dosql->Execute("SELECT * FROM v_db_infolist WHERE 1=1 AND delstate='false' AND checkinfo=true AND createtime>'$time' ORDER BY hits DESC LIMIT 0,9");
             while($row = $dosql->GetArray())
             {
                 // 获取链接地址

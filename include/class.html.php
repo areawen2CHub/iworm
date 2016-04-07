@@ -20,6 +20,7 @@ person: zhang
 
 class HTML
 {
+	var $id;
 	var $url;
 	var $html;
     var $charset;
@@ -27,22 +28,23 @@ class HTML
     var $status;
 
     // 初始化变量
-    function __construct($url){
+    function __construct($id,$url){
         // 初始化
-        $this->status = $this->Initialise($url);
+        $this->status = $this->Initialise($id,$url);
     }
 
     // 兼容低版本
-	function HTML($url){
-         $this->__construct($url);
+	function HTML($id,$url){
+         $this->__construct($id,$url);
 	}
 
     // 初始化
-    function Initialise($url){
-        // $url为空，则返回
-        if(empty($url)){
-            return false;
-        }
+    function Initialise($id,$url){
+    	global $dosql;
+        // 初始化$id
+        $this->id = $id;
+        // 更改收录状态
+        $dosql->ExecNoneQuery("UPDATE v_db_url SET incstate=true WHERE id='".$id."'");
         // 初始化$url
         $this->url  = $url;
         // 初始化$html
@@ -52,10 +54,10 @@ class HTML
             $this->charset = $this->GetHTMLCharset();
             // 转换charset
             $this->ChangeHTMLCharset();
-            // 收录charset
-            $this->AddCharset(); 
             // 初始化$host
-            $this->host = $this->GetUrlHost($url);   
+            $this->host = $this->GetUrlHost($url);
+            // 收录charset
+            $this->AddCharset();    
             // 不管该页面是否为需要的文章界面，都要将其中的url收集起来，作为下一次抓取的原url
             // 获取html上所有的url
             $allurl = $this->GetHTMLUrlAll(); 
@@ -63,14 +65,14 @@ class HTML
             for($i=0; $i<count($allurl); $i++){
                 $this->AddUrl($allurl[$i]);
             }
-            // 获取网页内容
-            global $dosql; 
-            if(!$this->GetHTMLContent()){
-                $dosql->ExecNoneQuery("UPDATE v_db_infourl SET delstate=true WHERE url='".$this->url."'"); 
-                return false;
+            // 获取网页内容 
+            if($this->GetHTMLContent()){
+                $dosql->ExecNoneQuery("UPDATE v_db_url SET incsuccess=true WHERE id='".$this->id."'"); 
+                $dosql->ExecNoneQuery("UPDATE v_db_host SET inccount=inccount+1 WHERE hostname='".$this->host."'"); 
+                return true;
+            }else{
+            	return false;
             }
-            $dosql->ExecNoneQuery("UPDATE v_db_infourl SET incstate=true WHERE url='".$this->url."'");
-            return true;
         }else{
             return false;
         }
@@ -215,11 +217,14 @@ class HTML
     */
     function AddCharset(){    
         global $dosql;    
-        $row = $dosql->GetOne("SELECT * FROM v_db_charset WHERE host='".$this->host."'");
+        $row = $dosql->GetOne("SELECT * FROM v_db_host WHERE hostname='".$this->host."'");
+        // 获取hostid
+        $hostid = $row['id'];
+        $row = $dosql->GetOne("SELECT * FROM v_db_charset WHERE hostid='".$hostid."'");
         // 检查是否存在
         if(!is_array($row) && !empty($this->charset)){
             // 如果不存在，则收录
-            $sql = "INSERT INTO v_db_charset (charset, host) VALUES ('".$this->charset."', '".$this->host."')";
+            $sql = "INSERT INTO v_db_charset (hostid, charset) VALUES ('".$hostid."', '".$this->charset."')";
             if(!$dosql->ExecNoneQuery($sql)){
                 throw new Exception('AddCharset插入语句错误'.$sql);  
                 exit();
@@ -351,6 +356,37 @@ class HTML
     	return $ip;
     }
     /*
+    * 函数说明：插入host
+    * 
+    * @access  public
+    * @parame  $url         string  需要插入的url
+    * @return  无
+    * @update  2016-04-07
+    *
+    */
+    function AddHost($host){    
+        global $dosql;    
+        $row = $dosql->GetOne("SELECT * FROM v_db_host WHERE hostname='".$host."'");
+        // 检查是否存在
+        if(!is_array($row)){
+            // 如果不存在，则收录
+            // 获取IP
+            $hostip = $this->GetHostIP($host);
+            // 初始化时间
+            $inittime = GetMkTime(time());  
+            $sql = "INSERT INTO v_db_host (hostname, hostip, inittime) VALUES ('".$host."', '".$hostip."', '".$inittime."')";
+            if(!$dosql->ExecNoneQuery($sql)){
+                throw new Exception('AddHost插入语句错误'.$sql);  
+                exit();
+            }
+        }else{
+        	// 最新时间
+            $neartime = GetMkTime(time());   
+        	// 如果存在，则增加主机收录的url数
+        	$dosql->ExecNoneQuery("UPDATE v_db_host SET urlcount=urlcount+1,neartime='".$neartime."' WHERE hostname='".$host."'");
+        }
+    }
+    /*
     * 函数说明：插入url
     * 
     * @access  public
@@ -361,21 +397,28 @@ class HTML
     */
     function AddUrl($url){    
     	global $dosql;    
-    	$row = $dosql->GetOne("SELECT * FROM v_db_infourl WHERE url='".$url."'");
+    	// 获取主机
+        $host = $this->GetUrlHost($url);
+        if(!empty($host)){
+        	// 收录主机，或者增加主机收录的url数
+        	$this->AddHost($host);
+        }else{
+        	return false;
+        }
+    	$row = $dosql->GetOne("SELECT * FROM v_db_url WHERE url='".$url."'");
     	// 检查是否存在
-        // 如果存在，增加一次收录
     	if(is_array($row)){
-            $dosql->ExecNoneQuery("UPDATE v_db_infourl SET inctimes=inctimes+1 WHERE url='".$url."'");
+    		// 如果存在，增加一次收录
+            $dosql->ExecNoneQuery("UPDATE v_db_url SET inctimes=inctimes+1 WHERE url='".$url."'");
     	}else{
             // 如果不存在，则收录该url
-            // 获取主机
-            $host = $this->GetUrlHost($url);
-            // 获取IP
-            $ip = $this->GetHostIP($host);
+            // 获取主机id
+            $row = $dosql->GetOne("SELECT * FROM v_db_host WHERE hostname='".$host."'");
+            $hostid = $row['id'];
             // 创建时间
             $createtime = GetMkTime(time());    
-
-            $sql = "INSERT INTO v_db_infourl (parenturl, url, urlip, urlhost, createtime, inctimes, incstate,delstate) VALUES ('".$this->url."', '".$url."', '".$ip."', '".$host."', '".$createtime."', 1, 'false','false')";
+            $sql = "INSERT INTO v_db_url (hostid, parenturl, url, createtime, inctimes, incstate,delstate) 
+            VALUES ('".$hostid."', '".$this->url."', '".$url."', '".$createtime."', 1, 'false','false')";
             if(!$dosql->ExecNoneQuery($sql)){
                 throw new Exception('AddUrl插入语句错误'.$sql);  
                 exit();
@@ -557,21 +600,16 @@ class HTML
                             // 点击量
                             $hits = mt_rand(50,100);
                             global $dosql;    
-                            $row = $dosql->GetOne("SELECT * FROM v_db_infoarticle WHERE ourl='".$this->url."'");
-                            // 如果已存在，则退出
-                            if(is_array($row)){
-                                echo '已收录!<br />';
-                                return false;
+                            // $row = $dosql->GetOne("SELECT * FROM v_db_url WHERE url='".$this->url."'");
+                            // 收录
+                            $sql = "INSERT INTO v_db_article (title, isoriginal, urlid, keywords, description, content, picurl, hits, orderid, createtime) 
+                            VALUES ('".$title."', 'false', '".$this->id."', '".$keywords."', '".$description."', '".$content."', '".$picurl."', '".$hits."', '0', '".$createtime."')";
+                            if(!$dosql->ExecNoneQuery($sql)){
+                                throw new Exception('GetHTMLContent插入语句错误'.$sql);  
+                                exit();
                             }else{
-                                // 如果不存在，则收录
-                                $sql = "INSERT INTO v_db_infoarticle (title, isoriginal, ourl, keywords, description, content, picurl, hits, orderid, createtime, checkinfo, delstate) VALUES ('".$title."', 'false', '".$this->url."', '".$keywords."', '".$description."', '".$content."', '".$picurl."', '".$hits."', '0', '".$createtime."', 'true', 'false')";
-                                if(!$dosql->ExecNoneQuery($sql)){
-                                    throw new Exception('GetHTMLContent插入语句错误'.$sql);  
-                                    exit();
-                                }else{
-                                    echo '插入成功!<br />';
-                                    return true;
-                                }
+                                echo '插入成功!<br />';
+                                return true;
                             }
                         }
                     }else{

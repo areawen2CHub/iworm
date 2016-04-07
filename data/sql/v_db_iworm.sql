@@ -48,9 +48,9 @@ CREATE TABLE IF NOT EXISTS `v_db_url` (
   `url` VARCHAR(255) NOT NULL COMMENT '链接地址',
   `createtime` INT(10) UNSIGNED NOT NULL COMMENT '收录时间',
   `inctimes` MEDIUMINT(8) UNSIGNED NOT NULL COMMENT '收录次数',
-  `incstate` ENUM('true', 'false') NOT NULL COMMENT '收录状态',
-  `incsuccess` ENUM('true', 'false') NOT NULL COMMENT '是否收录成功',
-  `delstate` ENUM('true', 'false') NOT NULL COMMENT '删除状态',
+  `incstate` ENUM('false', 'true') NOT NULL COMMENT '收录状态',
+  `incsuccess` ENUM('false', 'true') NOT NULL COMMENT '是否收录成功',
+  `delstate` ENUM('false', 'true') NOT NULL COMMENT '删除状态',
   `deltime` INT(10) NOT NULL COMMENT '删除时间',
   PRIMARY KEY (`id`)
   ) ENGINE=MyISAM AUTO_INCREMENT=1001 DEFAULT CHARSET=utf8;
@@ -84,8 +84,8 @@ CREATE TABLE IF NOT EXISTS `v_db_infolist` (
 -- 表的结构 `v_db_charset`
 --
 CREATE TABLE IF NOT EXISTS `v_db_charset` (
-  `id` SMALLINT(10) UNSIGNED NOT NULL COMMENT '关键字表id',
-  `hostid` INT(10) UNSIGNED NOT NULL,
-  `charset` VARCHAR(10) NOT NULL COMMENT '关键字',
+  `id` SMALLINT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '字符编码id',
+  `hostid` INT(10) UNSIGNED NOT NULL COMMENT 'hostid',
+  `charset` VARCHAR(10) NOT NULL COMMENT '字符编码',
   PRIMARY KEY (`id`)
   ) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;

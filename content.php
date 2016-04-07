@@ -1,5 +1,5 @@
 <?php 
-$dosql->Execute("SELECT * FROM v_db_infoarticle WHERE 1=1 AND delstate='false' AND picurl !='' AND checkinfo=true ORDER BY createtime DESC LIMIT 0,20");
+$dosql->Execute("SELECT * FROM v_db_infolist WHERE 1=1 AND delstate='false' AND picurl !='' AND checkinfo=true ORDER BY createtime DESC LIMIT 0,20");
 while($row = $dosql->GetArray())
 {
     // 获取链接地址
