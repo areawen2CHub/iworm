@@ -86,8 +86,8 @@
                 if(isset($_GET['id'])){
                     $id = $_GET['id'];
                     //增加一次点击量
-                    $dosql->ExecNoneQuery("UPDATE v_db_article SET hits=hits+1 WHERE id='".$id."'");
-                    $row = $dosql->GetOne("SELECT * FROM v_db_article WHERE id='".$id."'");
+                    $dosql->ExecNoneQuery("UPDATE v_db_infolist SET hits=hits+1 WHERE id='".$id."'");
+                    $row = $dosql->GetOne("SELECT * FROM v_db_infolist WHERE id='".$id."'");
                     if(isset($row)){
                         echo '<div class="content"><div class="title"><h2>'.$row['title'].'</h2></div><div class="date"><span>更新时间：20'.MyDate('y-m-d', $row['createtime']).'</span><span>阅读量：'.$row['hits'].'</span></div><p>'.$row['content'].'</p></div>';
                     }else{
