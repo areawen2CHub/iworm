@@ -59,6 +59,8 @@ class HTML
             for($i=0; $i<count($allurl); $i++){
                 $this->AddUrl($allurl[$i]);
             }
+        }else{
+            return false;
         }
     }
     /*
@@ -349,8 +351,8 @@ class HTML
     	global $dosql;    
     	$row = $dosql->GetOne("SELECT * FROM v_db_infourl WHERE url='".$url."'");
     	// 检查是否存在
+        // 如果存在，增加一次收录
     	if(is_array($row)){
-    		// 如果存在，增加一次收录
             $dosql->ExecNoneQuery("UPDATE v_db_infourl SET inctimes=inctimes+1 WHERE url='".$url."'");
     	}else{
             // 如果不存在，则收录该url
@@ -484,84 +486,92 @@ class HTML
     *
     */
     function GetHTMLContent(){  
-        // charset不能为空
-        if(!empty($this->charset)){
+        // charset不能为空，为空则输出信息返回
+        if(empty($this->charset)){
+            echo 'charset为空，非所需信息!<br />';
+            return false;
+        }else{
             // 获取title
             $title = $this->GetHTMLTitle(); 
             // 如果标题为空，直接跳出
             if(empty($title)){
+                echo 'title为空，非所需信息!<br />';
                 return false;
-            }
-            // 判断标题出现的次数
-            $times = substr_count($this->html, $title);
-            // $title必须出现2-4次，再多可能就是首页了
-            if($times>=1 && $times<5){
-                // 获取p标签的内容
-                // preg_match_all( '/<p[\s\S]*>[\s\S]*<\/p>/' , $this->html , $plist );
-                preg_match_all( '/<p>.*<\/p>/' , $this->html , $plist );
-                // print_r($plist);
-                $content = '';
-                for($i=0;$i<count($plist);$i++){
-                    for($j=0;$j<count($plist[$i]);$j++){
-                        if(!$this->JudgeStrIsExist($plist[$i][$j],'href=')){
-                            $content .= str_replace("'", '"', $plist[$i][$j]);
+            }else{
+                // 判断标题出现的次数
+                $times = substr_count($this->html, $title);
+                // $title必须出现2-4次，再多可能就是首页了
+                if($times>=1 && $times<5){
+                    // 获取p标签的内容
+                    // preg_match_all( '/<p[\s\S]*>[\s\S]*<\/p>/' , $this->html , $plist );
+                    preg_match_all( '/<p>.*<\/p>/' , $this->html , $plist );
+                    // print_r($plist);
+                    $content = '';
+                    for($i=0; $i<count($plist); $i++){
+                        for($j=0; $j<count($plist[$i]); $j++){
+                            // 剔除带a标签的p标签
+                            if(!$this->JudgeStrIsExist($plist[$i][$j],'href=')){
+                                $content .= str_replace("'", '"', $plist[$i][$j]);
+                            }
                         }
                     }
-                }
-                if(strlen($content)>=1000){
-                    // 获取图片
-                    $picurl = $this->GetHTMLImageOne();
-                    // 获取关键字
-                    preg_match_all('/<meta[\s]+name=\"keywords\"[\s]+content=\"([\s\S]*?)\"[\s]*[\/]?>/', $this->html, $kwlist);
-                    if(isset($kwlist[1][0])){
-                        // 替换掉单引号
-                        $keywords = str_replace("'", '"', $kwlist[1][0]);
+                    // 判断$content大小
+                    if(strlen($content)>=1000){
+                        // 获取关键字
+                        preg_match_all('/<meta[\s]+name=\"keywords\"[\s]+content=\"([\s\S]*?)\"[\s]*[\/]?>/', $this->html, $kwlist);
+                        if(isset($kwlist[1][0])){
+                            // 替换掉单引号
+                            $keywords = str_replace("'", '"', $kwlist[1][0]);
+                        }else{
+                            $keywords = '';
+                        }
+                        // 获取描述
+                        preg_match_all('/<meta[\s]+name=\"description\"[\s]+content=\"([\s\S]*?)\"[\s]*[\/]?>/', $this->html, $deslist);
+                        if(isset($deslist[1][0])){
+                            // 替换掉单引号
+                            $description = str_replace("'", '"', $deslist[1][0]);
+                            // echo '关键字'.$description.'<br />';
+                        }else{
+                            $description = '';
+                        }
+                        if(empty($keywords) || empty($description)){
+                            echo '无关键词或描述!<br />';
+                            return false;
+                        }else{
+                            // 获取图片
+                            $picurl = $this->GetHTMLImageOne();
+                            // 创建时间
+                            $createtime = GetMkTime(time()); 
+                            // 点击量
+                            $hits = mt_rand(50,100);
+                            global $dosql;    
+                            $row = $dosql->GetOne("SELECT * FROM v_db_infoarticle WHERE ourl='".$this->url."'");
+                            // 如果已存在，则退出
+                            if(is_array($row)){
+                                echo '已收录!<br />';
+                                return false;
+                            }else{
+                                // 如果不存在，则收录
+                                $sql = "INSERT INTO v_db_infoarticle (title, isoriginal, ourl, keywords, description, content, picurl, hits, orderid, createtime, checkinfo, delstate) VALUES ('".$title."', 'false', '".$this->url."', '".$keywords."', '".$description."', '".$content."', '".$picurl."', '".$hits."', '0', '".$createtime."', 'true', 'false')";
+                                if(!$dosql->ExecNoneQuery($sql)){
+                                    throw new Exception('GetHTMLContent插入语句错误'.$sql);  
+                                    exit();
+                                }else{
+                                    echo '插入成功!<br />';
+                                    return true;
+                                }
+                            }
+                        }
                     }else{
-                        $keywords = '';
-                    }
-                    // 获取描述
-                    preg_match_all('/<meta[\s]+name=\"description\"[\s]+content=\"([\s\S]*?)\"[\s]*[\/]?>/', $this->html, $deslist);
-                    if(isset($deslist[1][0])){
-                        // 替换掉单引号
-                        $description = str_replace("'", '"', $deslist[1][0]);
-                        // echo '关键字'.$description.'<br />';
-                    }else{
-                        $description = '';
-                    }
-                    if(empty($keywords) || empty($description)){
+                        echo '内容过少，可能是一则通知!<br />';
                         return false;
                     }
-                    // 创建时间
-                    $createtime = GetMkTime(time()); 
-                    // 点击量
-                    $hits = mt_rand(50,100);
-                    global $dosql;    
-                    $row = $dosql->GetOne("SELECT * FROM v_db_infoarticle WHERE ourl='".$this->url."'");
-                    // 如果已存在，则退出
-                    if(is_array($row)){
-                        $retu = false;
-                    }else{
-                        // 如果不存在，则收录
-                        $sql = "INSERT INTO v_db_infoarticle (title, isoriginal, ourl, keywords, description, content, picurl, hits, orderid, createtime, checkinfo, delstate) VALUES ('".$title."', 'false', '".$this->url."', '".$keywords."', '".$description."', '".$content."', '".$picurl."', '".$hits."', '0', '".$createtime."', 'true', 'false')";
-                        if($dosql->ExecNoneQuery($sql)){
-                            throw new Exception('GetHTMLContent插入语句错误'.$sql);  
-                            exit();
-                        }
-                        $retu = true; 
-                    }
                 }else{
-                    $retu = false;
-                }
-                
-            }else{
-                $retu = false;
-            }
-            // echo $title;
-            // echo $times;
-        }else{
-            $retu = false;
-        } 
-        return $retu;  
+                    echo '文章标题过多，可能是主页/模块主页!<br />';
+                    return false;
+                }         
+            }            
+        }
     }
 }
 ?>
