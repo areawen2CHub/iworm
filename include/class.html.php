@@ -15,17 +15,21 @@ person: zhang
  * 该类定义了完成html操作相关的所有方法
  */
 
+// 不限制响应时间
+@set_time_limit(0);
+
 class HTML
 {
 	var $url;
 	var $html;
     var $charset;
     var $host;
+    var $status;
 
     // 初始化变量
     function __construct($url){
         // 初始化
-        $this->Initialise($url);
+        $this->status = $this->Initialise($url);
     }
 
     // 兼容低版本
@@ -59,6 +63,14 @@ class HTML
             for($i=0; $i<count($allurl); $i++){
                 $this->AddUrl($allurl[$i]);
             }
+            // 获取网页内容
+            global $dosql; 
+            if(!$this->GetHTMLContent()){
+                $dosql->ExecNoneQuery("UPDATE v_db_infourl SET delstate=true WHERE url='".$this->url."'"); 
+                return false;
+            }
+            $dosql->ExecNoneQuery("UPDATE v_db_infourl SET incstate=true WHERE url='".$this->url."'");
+            return true;
         }else{
             return false;
         }
@@ -297,7 +309,7 @@ class HTML
             $host = $tempu['host'];
         }    
         // 判断抽取出来的主机是否有www
-        if(!$this->StrIsExist($host,'www.')){
+        if(!$this->JudgeStrIsExist($host,'www.')){
             $host = 'www.'.$host;
         }    
         return $host;  

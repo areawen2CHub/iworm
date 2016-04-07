@@ -20,21 +20,19 @@
 // 抓取网页
 $i = 0;
 $dosql->Execute("SELECT * FROM v_db_infourl WHERE 1=1 AND incstate='false' AND delstate='false' ORDER BY inctimes DESC LIMIT 0,1000");
-while($row = $dosql->GetArray())
-{
-	if($i >= 10){
-		break;
+while($row = $dosql->GetArray()){
+	if(isset($row['url'])){
+		if($i>=10){
+			break;
+		}else{
+			$html = new HTML($row['url']);
+		    if($html->status){
+			    $i++;
+		    }
+		}
+		
 	}
-	$html = new HTML($row['url']);
-    if($html->GetHTMLContent()){
-	    echo $i.')插入成功！<br />';
-	    $i++;
-    }else{
-	    echo $row['id'].'插入失败！<br />';
-	    $dosql->ExecNoneQuery("UPDATE v_db_infourl SET delstate=true WHERE id='".$row['id']."'");
-
-    }
-    $dosql->ExecNoneQuery("UPDATE v_db_infourl SET incstate=true WHERE id='".$row['id']."'");
+	
 }
 ?>
 </body>
