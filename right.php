@@ -30,12 +30,24 @@
     </div>
 </div>
 <div style="border:solid 0px #ddd;clear: both;margin: 0 0 20px 0;">
-	<form class="form-inline" method="post" action="search.php">
+	<form class="form-inline" method="post" action="index.php">
         <div class="form-group">
-            <input type="text" class="form-control" id="keywordsid" name="keywords" placeholder="关键字..." value="<?php if(isset($keywords)){echo $keywords;} ?>">
+            <input type="text" class="form-control" id="keywordsid" name="keywords" placeholder="关键字..." value="">
             <button type="submit" class="btn btn-search"><i class="icon-search"></i></button>
         </div>
-        <div class="hotwords"><span>吴奇隆刘诗诗婚礼</span><span>任贤齐</span><span>太阳的后裔</span><span>莱昂纳多写书法</span></div>
+        <div class="hotwords">
+        <?php 
+            // 获取当前时间的前24小时
+            $time = GetMkTime(time())-24*3600;
+            $span = '';
+            $dosql->Execute("SELECT * FROM v_db_keywords WHERE 1=1 AND inittime>'".$time."' ORDER BY searchtimes DESC LIMIT 0,4");
+            while($row = $dosql->GetArray())
+            {
+                $span .='<span>'.$row['keyword'].'</span>';
+            }
+            echo $span;
+        ?>
+        </div>
     </form>
 </div>
 <div class="title tit-iworm">
@@ -49,7 +61,7 @@
             $time = GetMkTime(time())-24*3600;
             // 定义排名
             $i = 1;
-            $dosql->Execute("SELECT * FROM v_db_infolist WHERE 1=1 AND delstate='false' AND checkinfo=true AND createtime>'$time' ORDER BY hits DESC LIMIT 0,9");
+            $dosql->Execute("SELECT * FROM v_db_infolist WHERE 1=1 AND delstate='false' AND checkinfo=true AND createtime>'".$time."' ORDER BY hits DESC LIMIT 0,9");
             while($row = $dosql->GetArray())
             {
                 // 获取链接地址
