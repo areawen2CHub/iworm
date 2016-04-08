@@ -67,7 +67,7 @@
     <span><i class="icon-th-large"></i></span><h3>推荐阅读</h3>
 </div>
 <ul>
-    <?php $dosql->Execute("SELECT * FROM v_db_infoarticle WHERE 1=1 AND delstate='false' AND picurl !='' AND checkinfo=true ORDER BY createtime DESC LIMIT 0,10");
+    <?php $dosql->Execute("SELECT * FROM v_db_infolist WHERE 1=1 AND delstate='false' AND picurl !='' AND checkinfo=true ORDER BY createtime DESC LIMIT 0,10");
     while($row = $dosql->GetArray())
     {
         // 获取链接地址

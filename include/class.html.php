@@ -417,8 +417,7 @@ class HTML
             $hostid = $row['id'];
             // 创建时间
             $createtime = GetMkTime(time());    
-            $sql = "INSERT INTO v_db_url (hostid, parenturl, url, createtime, inctimes, incstate,delstate) 
-            VALUES ('".$hostid."', '".$this->url."', '".$url."', '".$createtime."', 1, 'false','false')";
+            $sql = "INSERT INTO v_db_url (hostid, parenturl, url, createtime, inctimes) VALUES ('".$hostid."', '".$this->url."', '".$url."', '".$createtime."', 1)";
             if(!$dosql->ExecNoneQuery($sql)){
                 throw new Exception('AddUrl插入语句错误'.$sql);  
                 exit();
