@@ -1,5 +1,5 @@
 <?php   if(!defined('IN_VYAHUI')) exit('Request Error!');
-header("content-Type: text/html; charset=utf-8");
+//header("content-Type: text/html; charset=utf-8");
 
 /*
 **************************
@@ -44,7 +44,7 @@ class HTML
         // 初始化$id
         $this->id = $id;
         // 更改收录状态
-        $dosql->ExecNoneQuery("UPDATE v_db_url SET incstate=true WHERE id='".$id."'");
+        $dosql->ExecNoneQuery("UPDATE v_db_url SET incstate='true' WHERE id='".$id."'");
         // 初始化$url
         $this->url  = $url;
         // 初始化$html
@@ -67,7 +67,7 @@ class HTML
             }
             // 获取网页内容 
             if($this->GetHTMLContent()){
-                $dosql->ExecNoneQuery("UPDATE v_db_url SET incsuccess=true WHERE id='".$this->id."'"); 
+                $dosql->ExecNoneQuery("UPDATE v_db_url SET incsuccess='true' WHERE id='".$this->id."'"); 
                 $dosql->ExecNoneQuery("UPDATE v_db_host SET inccount=inccount+1 WHERE hostname='".$this->host."'"); 
                 return true;
             }else{
@@ -570,7 +570,8 @@ class HTML
                         }
                     }
                     // 判断$content大小
-                    if(strlen($content)>=1000){
+                    if(strlen($content)>=500){
+                        global $dosql; 
                         // 获取关键字
                         preg_match_all('/<meta[\s]+name=\"keywords\"[\s]+content=\"([\s\S]*?)\"[\s]*[\/]?>/', $this->html, $kwlist);
                         if(isset($kwlist[1][0])){
@@ -579,17 +580,36 @@ class HTML
                         }else{
                             $keywords = '';
                         }
+                        if(empty($keywords)){
+                            echo '关键字为空!<br />';
+                            return false;
+                        }else{
+                            // 获取当前时间的前24小时
+                            $time = GetMkTime(time())-24*3600;
+                            // 关键字是否存在
+                            $kwisexist = false;
+                            $dosql->Execute("SELECT * FROM v_db_keywords WHERE 1=1 AND inittime>'".$time."' ORDER BY searchtimes DESC LIMIT 0,4");
+                            while($row = $dosql->GetArray()){
+                                if($this->JudgeStrIsExist($keywords,$row['keyword'])){
+                                    $kwisexist = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if(!$kwisexist){
+                            echo '非要找的内容!<br />';
+                            return false;
+                        }
                         // 获取描述
                         preg_match_all('/<meta[\s]+name=\"description\"[\s]+content=\"([\s\S]*?)\"[\s]*[\/]?>/', $this->html, $deslist);
                         if(isset($deslist[1][0])){
                             // 替换掉单引号
                             $description = str_replace("'", '"', $deslist[1][0]);
-                            // echo '关键字'.$description.'<br />';
                         }else{
                             $description = '';
                         }
-                        if(empty($keywords) || empty($description)){
-                            echo '无关键词或描述!<br />';
+                        if(empty($description)){
+                            echo '无描述!<br />';
                             return false;
                         }else{
                             // 获取图片
@@ -597,8 +617,7 @@ class HTML
                             // 创建时间
                             $createtime = GetMkTime(time()); 
                             // 点击量
-                            $hits = mt_rand(50,100);
-                            global $dosql;    
+                            $hits = mt_rand(50,100);   
                             // $row = $dosql->GetOne("SELECT * FROM v_db_url WHERE url='".$this->url."'");
                             // 收录
                             $sql = "INSERT INTO v_db_infolist (title, isoriginal, urlid, keywords, description, content, picurl, hits, orderid, createtime) 

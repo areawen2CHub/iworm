@@ -19,7 +19,7 @@
 <?php
 // 抓取网页
 $i = 0;
-$dosql->Execute("SELECT * FROM v_db_url WHERE 1=1 AND incstate='false' ORDER BY inctimes DESC LIMIT 0,10");
+$dosql->Execute("SELECT * FROM v_db_url WHERE 1=1 AND incstate='false' ORDER BY inctimes DESC LIMIT 0,100");
 while($row = $dosql->GetArray()){
 	if(isset($row['id']) && isset($row['url'])){
 		if($i>=10){
