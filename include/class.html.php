@@ -74,6 +74,7 @@ class HTML
             	return false;
             }
         }else{
+            echo 'html为空!<br />';
             return false;
         }
     }
