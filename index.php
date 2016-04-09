@@ -152,10 +152,10 @@ if(isset($_GET['id'])){
                             $row = $dosql->GetOne("SELECT * FROM v_db_keywords WHERE keyword='".$kwarr[$i]."' AND inittime > ".$restime."");
                             if(is_array($row)){
                                 // 如果存在，增加一次收录
-                                $dosql->ExecNoneQuery("UPDATE v_db_keywords SET searchtimes=searchtimes+1 WHERE id='".$row['id']."'");
+                                $dosql->ExecNoneQuery("UPDATE v_db_keywords SET seacount=seacount+1 WHERE id='".$row['id']."'");
                             }else{
                                 $inittime = GetMkTime(time()); 
-                                $sql = "INSERT INTO v_db_keywords (keyword, searchtimes, inittime) VALUES ('".$kwarr[$i]."', '1', '".$inittime."')";
+                                $sql = "INSERT INTO v_db_keywords (keyword, seacount, inittime) VALUES ('".$kwarr[$i]."', '1', '".$inittime."')";
                                 if(!$dosql->ExecNoneQuery($sql)){
                                     throw new Exception('关键字插入语句错误'.$sql);  
                                     exit();
