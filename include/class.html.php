@@ -24,34 +24,42 @@ class HTML
 	var $url;
 	var $html;
     var $charset;
+    var $hostid;
     var $host;
     var $status;
 
+
     // 初始化变量
-    function __construct($id,$url){
+    function __construct($id,$hostid,$url){
         // 初始化
-        $this->status = $this->Initialise($id,$url);
+        $this->status = $this->Initialise($id,$hostid,$url);
     }
 
     // 兼容低版本
-	function HTML($id,$url){
+	function HTML($id,$hostid,$url){
          $this->__construct($id,$url);
 	}
 
     // 初始化
-    function Initialise($id,$url){
-    	global $dosql;
+    function Initialise($id,$hostid,$url){
+    	// 引用数据库全局变量
+        global $dosql;
         // 初始化$id
         $this->id = $id;
-        // 更改收录状态
-        $dosql->ExecNoneQuery("UPDATE v_db_url SET incstate='true' WHERE id='".$id."'");
+        // 获取当前时间
+        $neartime = GetMkTime(time());
+        // 更改收录状态、访问数、上次访问时间和最近访问时间
+        $dosql->ExecNoneQuery("UPDATE v_db_url SET incstate='true', viscount=viscount+1, lasttime=neartime, neartime=".$neartime." WHERE id=".$id."");
         // 初始化$url
         $this->url  = $url;
+        // 初始化$hostid
+        $this->hostid  = $hostid;
         // 初始化$html
         $this->html = $this->GetHTMLObj();
-        if(!empty($this->html) && $this->html != false){
+        if($this->html != false && strlen($this->html)>0){
             // 初始化$charset
             $this->charset = $this->GetHTMLCharset();
+            // echo $this->charset;
             // 转换charset
             $this->ChangeHTMLCharset();
             // 初始化$host
@@ -61,20 +69,26 @@ class HTML
             // 不管该页面是否为需要的文章界面，都要将其中的url收集起来，作为下一次抓取的原url
             // 获取html上所有的url
             $allurl = $this->GetHTMLUrlAll(); 
+            // print_r($allurl);
             // 已经收录的，增加收录次数，未收录的，收录进去
             for($i=0; $i<count($allurl); $i++){
                 $this->AddUrl($allurl[$i]);
             }
             // 获取网页内容 
+            // 获取成功
             if($this->GetHTMLContent()){
-                $dosql->ExecNoneQuery("UPDATE v_db_url SET incsuccess='true' WHERE id='".$this->id."'"); 
-                $dosql->ExecNoneQuery("UPDATE v_db_host SET inccount=inccount+1 WHERE hostname='".$this->host."'"); 
+            	// url收录成功
+                $dosql->ExecNoneQuery("UPDATE v_db_url SET incsuccess='true' WHERE id=".$this->id."");
+                // 对应的host增加收录成功次数 
+                $dosql->ExecNoneQuery("UPDATE v_db_host SET inccount=inccount+1 WHERE id=".$this->hostid.""); 
                 return true;
             }else{
             	return false;
             }
         }else{
-            echo 'html为空!<br />';
+        	// 记录网页抓取为空
+            $dosql->ExecNoneQuery("UPDATE v_db_url SET isempty='true' WHERE id=".$id."");
+            echo $id.'html为空!<br />';
             return false;
         }
     }
@@ -118,13 +132,6 @@ class HTML
         curl_setopt($ch, CURLOPT_TIMEOUT, 30); 
         // 运行URL，获取页面
         $html = curl_exec($ch);    
-        // echo $html;
-        // 拆分$html
-        if(isset($html)){
-            list($header, $html) = explode("\r\n\r\n", $html);   
-        }else{
-            $html = '';
-        }
 
         // 判断是否是跳转页面
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);  
@@ -135,12 +142,13 @@ class HTML
             curl_setopt($ch, CURLOPT_URL, $this->url);  
             curl_setopt($ch, CURLOPT_HEADER, false);  
             $html = curl_exec($ch);  
-        }      
+        } 
+        // echo $html;
 
         // 关闭cURL对象
         if ($html == false) {  
             curl_close($ch);  
-        }  
+        }
         @curl_close($ch);     
 
         return $html;
@@ -216,16 +224,17 @@ class HTML
     * @update  2016-03-29
     *
     */
-    function AddCharset(){    
+    function AddCharset(){   
+        // 引用数据库全局变量 
         global $dosql;    
-        $row = $dosql->GetOne("SELECT * FROM v_db_host WHERE hostname='".$this->host."'");
-        // 获取hostid
-        $hostid = $row['id'];
-        $row = $dosql->GetOne("SELECT * FROM v_db_charset WHERE hostid='".$hostid."'");
+        // $row = $dosql->GetOne("SELECT * FROM v_db_host WHERE id=".$this->hostid."");
+        // // 获取hostid
+        // $hostid = $row['id'];
+        $row = $dosql->GetOne("SELECT * FROM v_db_charset WHERE hostid=".$this->hostid."");
         // 检查是否存在
         if(!is_array($row) && !empty($this->charset)){
             // 如果不存在，则收录
-            $sql = "INSERT INTO v_db_charset (hostid, charset) VALUES ('".$hostid."', '".$this->charset."')";
+            $sql = "INSERT INTO v_db_charset (hostid, charset) VALUES (".$this->hostid.", '".$this->charset."')";
             if(!$dosql->ExecNoneQuery($sql)){
                 throw new Exception('AddCharset插入语句错误'.$sql);  
                 exit();
@@ -365,7 +374,8 @@ class HTML
     * @update  2016-04-07
     *
     */
-    function AddHost($host){    
+    function AddHost($host){  
+        // 引用数据库全局变量   
         global $dosql;    
         $row = $dosql->GetOne("SELECT * FROM v_db_host WHERE hostname='".$host."'");
         // 检查是否存在
@@ -375,7 +385,7 @@ class HTML
             $hostip = $this->GetHostIP($host);
             // 初始化时间
             $inittime = GetMkTime(time());  
-            $sql = "INSERT INTO v_db_host (hostname, hostip, inittime) VALUES ('".$host."', '".$hostip."', '".$inittime."')";
+            $sql = "INSERT INTO v_db_host (hostname, hostip, inittime) VALUES ('".$host."', '".$hostip."', ".$inittime.")";
             if(!$dosql->ExecNoneQuery($sql)){
                 throw new Exception('AddHost插入语句错误'.$sql);  
                 exit();
@@ -384,7 +394,7 @@ class HTML
         	// 最新时间
             $neartime = GetMkTime(time());   
         	// 如果存在，则增加主机收录的url数
-        	$dosql->ExecNoneQuery("UPDATE v_db_host SET urlcount=urlcount+1,neartime='".$neartime."' WHERE hostname='".$host."'");
+        	$dosql->ExecNoneQuery("UPDATE v_db_host SET urlcount=urlcount+1,neartime=".$neartime." WHERE hostname='".$host."'");
         }
     }
     /*
@@ -396,7 +406,8 @@ class HTML
     * @update  2016-03-29
     *
     */
-    function AddUrl($url){    
+    function AddUrl($url){ 
+        // 引用数据库全局变量    
     	global $dosql;    
     	// 获取主机
         $host = $this->GetUrlHost($url);
@@ -410,7 +421,7 @@ class HTML
     	// 检查是否存在
     	if(is_array($row)){
     		// 如果存在，增加一次收录
-            $dosql->ExecNoneQuery("UPDATE v_db_url SET inctimes=inctimes+1 WHERE url='".$url."'");
+            $dosql->ExecNoneQuery("UPDATE v_db_url SET inccount=inccount+1 WHERE url='".$url."'");
     	}else{
             // 如果不存在，则收录该url
             // 获取主机id
@@ -418,7 +429,7 @@ class HTML
             $hostid = $row['id'];
             // 创建时间
             $createtime = GetMkTime(time());    
-            $sql = "INSERT INTO v_db_url (hostid, parenturl, url, createtime, inctimes) VALUES ('".$hostid."', '".$this->url."', '".$url."', '".$createtime."', 1)";
+            $sql = "INSERT INTO v_db_url (hostid, parenturl, url, createtime, inccount) VALUES (".$hostid.", '".$this->url."', '".$url."', ".$createtime.", 1)";
             if(!$dosql->ExecNoneQuery($sql)){
                 throw new Exception('AddUrl插入语句错误'.$sql);  
                 exit();
@@ -444,6 +455,7 @@ class HTML
         if(!is_dir($save_path)){  
             $res=mkdir($save_path,0777,true); 
             if(!$res){
+            	echo '创建文件夹错误<br />';
                 return false;
             }
         }
@@ -528,6 +540,8 @@ class HTML
             file_put_contents($filename,$img);
             // 获取文件存储在本地路径
             $ret_imgurl = $filename;
+        }else{
+        	$ret_imgurl = '';
         }
         return $ret_imgurl;
     }
@@ -572,30 +586,27 @@ class HTML
                     }
                     // 判断$content大小
                     if(strlen($content)>=500){
+                    	// 引用数据库全局变量 
                         global $dosql; 
                         // 获取关键字
                         preg_match_all('/<meta[\s]+name=\"keywords\"[\s]+content=\"([\s\S]*?)\"[\s]*[\/]?>/', $this->html, $kwlist);
-                        if(isset($kwlist[1][0])){
+                        if(!empty($kwlist[1][0])){
                             // 替换掉单引号
                             $keywords = str_replace("'", '"', $kwlist[1][0]);
-                        }else{
-                            $keywords = '';
-                        }
-                        if(empty($keywords)){
-                            echo '关键字为空!<br />';
-                            return false;
-                        }else{
                             // 获取当前时间的前24小时
                             $time = GetMkTime(time())-24*3600;
                             // 关键字是否存在
                             $kwisexist = false;
-                            $dosql->Execute("SELECT * FROM v_db_keywords WHERE 1=1 AND inittime>'".$time."' ORDER BY searchtimes DESC LIMIT 0,4");
+                            $dosql->Execute("SELECT * FROM v_db_keywords WHERE 1=1 AND inittime>'".$time."' ORDER BY seacount DESC LIMIT 0,4");
                             while($row = $dosql->GetArray()){
                                 if($this->JudgeStrIsExist($keywords,$row['keyword'])){
                                     $kwisexist = true;
                                     break;
                                 }
                             }
+                        }else{
+                            echo '关键字为空!<br />';
+                            return false;
                         }
                         if(!$kwisexist){
                             echo '非要找的内容!<br />';
@@ -603,26 +614,23 @@ class HTML
                         }
                         // 获取描述
                         preg_match_all('/<meta[\s]+name=\"description\"[\s]+content=\"([\s\S]*?)\"[\s]*[\/]?>/', $this->html, $deslist);
-                        if(isset($deslist[1][0])){
+                        if(!empty($deslist[1][0])){
                             // 替换掉单引号
                             $description = str_replace("'", '"', $deslist[1][0]);
-                        }else{
-                            $description = '';
-                        }
-                        if(empty($description)){
-                            echo '无描述!<br />';
-                            return false;
-                        }else{
                             // 获取图片
-                            $picurl = $this->GetHTMLImageOne();
+                            if($this->GetHTMLImageOne() === false){
+                            	$picurl = '';
+                            }else{
+                            	$picurl = $this->GetHTMLImageOne();
+                            }
                             // 创建时间
                             $createtime = GetMkTime(time()); 
                             // 点击量
                             $hits = mt_rand(50,100);   
                             // $row = $dosql->GetOne("SELECT * FROM v_db_url WHERE url='".$this->url."'");
                             // 收录
-                            $sql = "INSERT INTO v_db_infolist (title, isoriginal, urlid, keywords, description, content, picurl, hits, orderid, createtime) 
-                            VALUES ('".$title."', 'false', '".$this->id."', '".$keywords."', '".$description."', '".$content."', '".$picurl."', '".$hits."', '0', '".$createtime."')";
+                            $sql = "INSERT INTO v_db_infolist (title, urlid, keywords, description, content, picurl, hits, orderid, createtime) 
+                            VALUES ('".$title."', ".$this->id.", '".$keywords."', '".$description."', '".$content."', '".$picurl."', ".$hits.", 0, ".$createtime.")";
                             if(!$dosql->ExecNoneQuery($sql)){
                                 throw new Exception('GetHTMLContent插入语句错误'.$sql);  
                                 exit();
@@ -630,6 +638,9 @@ class HTML
                                 echo '插入成功!<br />';
                                 return true;
                             }
+                        }else{
+                            echo '无描述!<br />';
+                            return false;
                         }
                     }else{
                         echo '内容过少，可能是一则通知!<br />';

@@ -19,19 +19,22 @@
 <?php
 // 抓取网页
 $i = 0;
+$j = 0;
 $dosql->Execute("SELECT * FROM v_db_url WHERE 1=1 AND incstate='false' ORDER BY inctimes DESC LIMIT 0,10");
 while($row = $dosql->GetArray()){
-	if(!empty($row['id']) && !empty($row['url'])){
+	if(!empty($row['id']) && !empty($row['hostid']) && !empty($row['url'])){
 		if($i>=10){
 			break;
 		}else{
-			$html = new HTML($row['id'],$row['url']);
+			$html = new HTML($row['id'],$row['hostid'],$row['url']);
 		    if($html->status){
 			    $i++;
 		    }
 		}
 	}
+	$j++;
 }
+echo $j.'<br />';
 echo $i;
 ?>
 </body>

@@ -33,25 +33,25 @@ class HTMLI
         // 初始化$html
         $this->html = $this->GetHTML();
         // 初始化$char
-        $this->char = $this->GetHTMLCharset();
-        // 如果$char为空，则返回
-        if(empty($this->char)){
-            return false;
-        }
-        // 转换charset
-        $this->ChangeHTMLCharset();
-        // 初始化$host
-        $this->host = $this->GetUrlHost($url);
-        // 收录charset
-        $this->AddCharset();
+        // $this->char = $this->GetHTMLCharset();
+        // // 如果$char为空，则返回
+        // if(empty($this->char)){
+        //     return false;
+        // }
+        // // 转换charset
+        // $this->ChangeHTMLCharset();
+        // // 初始化$host
+        // $this->host = $this->GetUrlHost($url);
+        // // 收录charset
+        // $this->AddCharset();
 
-        // 不管该页面是否为需要的文章界面，都要将其中的url收集起来，作为下一次抓取的原url
-        // 获取html上所有的url
-        $urlall = $this->GetHTMLUrlAll(); 
-        // 已经收录的，增加收录次数，未收录的，收录进去
-        for($i=0; $i<count($urlall); $i++){
-            $this->AddUrl($urlall[$i]);
-        } 
+        // // 不管该页面是否为需要的文章界面，都要将其中的url收集起来，作为下一次抓取的原url
+        // // 获取html上所有的url
+        // $urlall = $this->GetHTMLUrlAll(); 
+        // // 已经收录的，增加收录次数，未收录的，收录进去
+        // for($i=0; $i<count($urlall); $i++){
+        //     $this->AddUrl($urlall[$i]);
+        // } 
     }
     /*
     * 函数说明：判断字符串中是否存在某个字符/字符串
@@ -95,7 +95,7 @@ class HTMLI
         $html = curl_exec($ch);    
         // echo $html;
         // 拆分$html
-        list($header, $html) = explode("\r\n\r\n", $html);    
+        // list($header, $html) = explode("\r\n\r\n", $html);    
 
         // 判断是否是跳转页面
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);  
@@ -106,7 +106,11 @@ class HTMLI
             curl_setopt($ch, CURLOPT_URL, $this->url);  
             curl_setopt($ch, CURLOPT_HEADER, false);  
             $html = curl_exec($ch);  
-        }      
+        }   
+
+        // if($html != false && strlen($html)>0){
+        //     echo '是数组';
+        // }   
 
         // 关闭cURL对象
         if ($html == false) {  

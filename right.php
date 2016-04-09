@@ -40,7 +40,7 @@
             // 获取当前时间的前24小时
             $time = GetMkTime(time())-24*3600;
             $span = '';
-            $dosql->Execute("SELECT * FROM v_db_keywords WHERE 1=1 AND inittime>'".$time."' ORDER BY searchtimes DESC LIMIT 0,4");
+            $dosql->Execute("SELECT * FROM v_db_keywords WHERE 1=1 AND inittime>'".$time."' ORDER BY seacount DESC LIMIT 0,4");
             while($row = $dosql->GetArray())
             {
                 $span .='<span>'.$row['keyword'].'</span>';
