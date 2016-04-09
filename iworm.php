@@ -21,7 +21,7 @@
 $i = 0;
 $dosql->Execute("SELECT * FROM v_db_url WHERE 1=1 AND incstate='false' ORDER BY inctimes DESC LIMIT 0,10");
 while($row = $dosql->GetArray()){
-	if(isset($row['id']) && isset($row['url'])){
+	if(!empty($row['id']) && !empty($row['url'])){
 		if($i>=10){
 			break;
 		}else{
@@ -32,6 +32,7 @@ while($row = $dosql->GetArray()){
 		}
 	}
 }
+echo $i;
 ?>
 </body>
 </html>

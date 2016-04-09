@@ -1,4 +1,4 @@
-<?php	//if(!defined('IN_PHPMYWIND')) exit('Request Error!');
+<?php	if(!defined('IN_VYAHUI')) exit('Request Error!');
 
 /*
 **************************

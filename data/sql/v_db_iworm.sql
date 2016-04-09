@@ -89,3 +89,14 @@ CREATE TABLE IF NOT EXISTS `v_db_charset` (
   `charset` VARCHAR(10) NOT NULL COMMENT '字符编码',
   PRIMARY KEY (`id`)
   ) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+--
+-- 表的结构 `v_db_keywords`
+--
+CREATE TABLE IF NOT EXISTS `v_db_keywords` (
+  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '关键字表id',
+  `keyword` VARCHAR(50) NOT NULL COMMENT '关键字',
+  `searchtimes` MEDIUMINT(8) UNSIGNED NOT NULL COMMENT '当天搜索次数',
+  `inittime` INT(10) UNSIGNED NOT NULL COMMENT '当天第一次搜索的时间',
+  PRIMARY KEY (`id`)
+  ) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
