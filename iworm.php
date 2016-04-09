@@ -20,7 +20,14 @@
 // 抓取网页
 $i = 0;
 $j = 0;
-$dosql->Execute("SELECT * FROM v_db_url WHERE 1=1 AND incstate='false' ORDER BY inctimes DESC LIMIT 0,10");
+$sql = "select u.id as id,u.hostid as hostid,u.url as url,h.inccount as inccount,h.errcount as errcount 
+from v_db_url u left join v_db_host h on u.hostid = h.id where 1=1 
+and u.incstate='false' 
+and u.delstate='false'
+and u.isempty = 'false'
+and h.isusing ='true'
+order by h.inccount desc,h.errcount asc LIMIT 0,1000";
+$dosql->Execute($sql);
 while($row = $dosql->GetArray()){
 	if(!empty($row['id']) && !empty($row['hostid']) && !empty($row['url'])){
 		if($i>=10){
