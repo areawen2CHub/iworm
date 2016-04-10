@@ -26,7 +26,7 @@ and u.incstate='false'
 and u.delstate='false'
 and u.isempty = 'false'
 and h.isusing ='true'
-order by h.inccount desc,h.errcount asc LIMIT 0,1000";
+order by h.inccount desc,h.errcount asc LIMIT 0,10";
 $dosql->Execute($sql);
 while($row = $dosql->GetArray()){
 	if(!empty($row['id']) && !empty($row['hostid']) && !empty($row['url'])){
