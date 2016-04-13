@@ -594,24 +594,24 @@ class HTML
                             // 替换掉单引号
                             $keywords = str_replace("'", '"', $kwlist[1][0]);
                             // 获取当前时间的前24小时
-                            $time = GetMkTime(time())-24*3600;
-                            // 关键字是否存在
-                            $kwisexist = false;
-                            $dosql->Execute("SELECT * FROM v_db_keywords WHERE 1=1 AND inittime>'".$time."' ORDER BY seacount DESC LIMIT 0,4");
-                            while($row = $dosql->GetArray()){
-                                if($this->JudgeStrIsExist($keywords,$row['keyword'])){
-                                    $kwisexist = true;
-                                    break;
-                                }
-                            }
+                            // $time = GetMkTime(time())-24*3600;
+                            // // 关键字是否存在
+                            // $kwisexist = false;
+                            // $dosql->Execute("SELECT * FROM v_db_keywords WHERE 1=1 AND inittime>'".$time."' ORDER BY seacount DESC LIMIT 0,4");
+                            // while($row = $dosql->GetArray()){
+                            //     if($this->JudgeStrIsExist($keywords,$row['keyword'])){
+                            //         $kwisexist = true;
+                            //         break;
+                            //     }
+                            // }
                         }else{
                             echo '关键字为空!<br />';
                             return false;
                         }
-                        if(!$kwisexist){
-                            echo '非要找的内容!<br />';
-                            return false;
-                        }
+                        // if(!$kwisexist){
+                        //     echo '非要找的内容!<br />';
+                        //     return false;
+                        // }
                         // 获取描述
                         preg_match_all('/<meta[\s]+name=\"description\"[\s]+content=\"([\s\S]*?)\"[\s]*[\/]?>/', $this->html, $deslist);
                         if(!empty($deslist[1][0])){
