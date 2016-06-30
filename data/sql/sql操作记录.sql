@@ -65,4 +65,5 @@ order by inccount desc,urlcount desc;
 select * from vi_url limit 0,1;
 select count(*) from v_db_url;
 select count(*) from v_db_url where incsuccess='true';
+select count(*) from v_db_host;
 
