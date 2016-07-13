@@ -65,4 +65,19 @@ order by inccount desc,urlcount desc;
 select * from vi_url limit 0,1;
 select count(*) from v_db_url;
 select count(*) from v_db_url where incsuccess='true';
+/*2016-4-25*/
+use dev_agora;
+select PermissionID from rolepermission where RoleID=5;
 
+select * from user;
+select * from permission;
+/*2016-4-26*/
+select count(*) from rolepermission where PermissionID=8;
+use dev_config;
+select * from permission;
+select * from roles;
+select count(*) FROM banjistudent where banjiRole=5;
+select * from rolepermission;
+select ID as RoleTypeID,LevelOne as RoleTypeName from roles where FatherLevel = 0;
+select ID as RoleID,LevelTwo as RoleName from roles where FatherLevel =1 order by ID;
+update roles set LevelTwo = LevelOne ,LevelOnE = '' WHERE id = 10;
