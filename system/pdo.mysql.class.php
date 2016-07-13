@@ -38,7 +38,7 @@ class MySQL
 		$this->dbUser     = $GLOBALS['db_user'];
 		$this->dbPassword = $GLOBALS['db_pwd'];
 		$this->dbHost     = $GLOBALS['db_host'];
-		$this->dbConn     = "$this->dbType:host:$this->dbHost;dbname=$this->dbName";
+		$this->dbConn     = "$this->dbType:host=$this->dbHost;dbname=$this->dbName";
 	}
 
 	//	供低版本PHP使用
@@ -53,20 +53,14 @@ class MySQL
 
 	/*
 	*
-	* 打开数据库
+	* 打开数据库连接
 	*
 	*/	
 	function open(){
 		try{
-			$pdo = new PDO($this->dbConn,$this->dbUser,$this->dbPassword);	//	实例化对象
-			print_r($pdo);
-			if(is_null($pdo)){
-				echo '空';
-			}else{
-				echo '不为空';
-			}
+			$pdo = new PDO($this->dbConn,$this->dbUser,$this->dbPassword,array(PDO::ATTR_PERSISTENT => true));	//	实例化对象
 			return $pdo;
-		}catch(Exception $e){
+		}catch(PDOException $e){
 			$this->logError("$this->dbConn:连接数据库失败，可能密码不对或数据库服务器异常！");
 		}
 	}
