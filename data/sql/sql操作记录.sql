@@ -69,6 +69,8 @@ select count(*) from v_db_url where incsuccess='true';
 use dev_agora;
 select PermissionID from rolepermission where RoleID=5;
 
+select count(*) from v_db_host;
+
 select * from user;
 select * from permission;
 /*2016-4-26*/
