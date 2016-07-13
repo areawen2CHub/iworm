@@ -1,9 +1,7 @@
 <?php
 
-//	定义服务器的绝对路径
-define('BASE_PATH', $_SERVER['DOCUMENT_ROOT']);
 //	定义Smarty目录的绝对路径
-define('SMARTY_PATH', '\iworm\smarty\\');
+define('SMARTY_PATH', '\smarty\\');
 //	加载Smarty类库文件
 require BASE_PATH.SMARTY_PATH.'Smarty.class.php';
 
