@@ -1,4 +1,4 @@
-<?php	if(!defined('IN_VYAHUI')) exit('Request Error!');
+<?php if(!defined('SUBGROUPS')) exit('System Error!');
 
 // $cfg_webname = '湖南奥昇信息科技有限公司';
 // $cfg_weburl = 'http://localhost';
@@ -33,7 +33,7 @@ $cfg_timezone = '8';
 // $cfg_maintype = 'N';
 // $cfg_typefold = 'N';
 // $cfg_quicktool = 'Y';
-// $cfg_diserror = 'Y';
+$cfg_diserror = 'Y';
 // $cfg_isreurl = 'N';
 // $cfg_reurl_index = 'index.html';
 // $cfg_reurl_about = '{about}-{cid}-{page}.html';
@@ -66,5 +66,8 @@ $cfg_timezone = '8';
 $cfg_curlopt_timeout = 10;
 $cfg_curlopt_timeout_ms = 10;
 $cfg_curlopt_connecttimeout = 10; 
-$cfg_curlopt_connecttimeout_ms = 10;       
+$cfg_curlopt_connecttimeout_ms = 10;     
+
+//	PDO中捕获SQL语句中的错误模式
+$cfg_errmode = 'EXCEPTION';  
 ?>

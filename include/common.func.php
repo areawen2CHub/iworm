@@ -1,4 +1,4 @@
-<?php	if(!defined('IN_VYAHUI')) exit('Request Error!');
+<?php if(!defined('SUBGROUPS')) exit('System Error!');
 
 /*
 **************************
@@ -308,6 +308,22 @@ if(!function_exists('Writef'))
 		{
 			return FALSE;
 		}
+	}
+}
+
+/*
+*
+* 格式化参数，主要用于Mysql
+*
+* @param  string  $str  字符串
+* @param  array   $arr  数组
+*/
+if(!function_exists('paramForm')){
+	function paramForm($str,$arr){
+		for($i=0;$i<count($arr);$i++){
+			$str = str_replace($arr[$i]->key, $arr[$i]->value, $str);
+		}
+		return $str;
 	}
 }
 ?>
