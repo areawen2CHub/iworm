@@ -45,41 +45,15 @@ select * from v_db_host;
 use iworm_db;
 set SQL_SAFE_UPDATES=0;
 
-select * from v_db_url where incsuccess='true';
-/*创建视图vi_url*/
-create view vi_url 
-as
-select u.id as id,hostid,url,urlcount,h.inccount as inccount,createtime 
-from v_db_url as u
- 
-left join
-v_db_host as h
 
-on u.hostid=h.id
 
-where 1=1
-and u.incstate='false'
-and u.delstate='false'
-order by inccount desc,urlcount desc;
 
-select * from vi_url limit 0,1;
-select count(*) from v_db_url;
-select count(*) from v_db_url where incsuccess='true';
-/*2016-4-25*/
-use dev_agora;
-select PermissionID from rolepermission where RoleID=5;
 
-select count(*) from v_db_host;
 
-select * from user;
-select * from permission;
-/*2016-4-26*/
-select count(*) from rolepermission where PermissionID=8;
-use dev_config;
-select * from permission;
-select * from roles;
-select count(*) FROM banjistudent where banjiRole=5;
-select * from rolepermission;
-select ID as RoleTypeID,LevelOne as RoleTypeName from roles where FatherLevel = 0;
-select ID as RoleID,LevelTwo as RoleName from roles where FatherLevel =1 order by ID;
-update roles set LevelTwo = LevelOne ,LevelOnE = '' WHERE id = 10;
+
+select * from v_db_keywords;
+
+
+select * from v_db_host;
+
+

@@ -201,7 +201,7 @@ if(!function_exists('GetIP'))
 	}
 }
 
-//返回格林威治标准时间
+//	返回格林威治标准时间
 if(!function_exists('MyDate'))
 {
 	function MyDate($format='Y-m-d H:i:s', $timest=0)

@@ -1,15 +1,43 @@
-<! DOCTYPE html>
 <!DOCTYPE html>
 <html lang="zh_CN">
+<head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Type" content="IE=edge,chrome=1">
+<meta http-equiv = "X-UA-Compatible" content = "IE=edge,chrome=1" />
 <meta name="description" content="">
 <meta name="keywords" content="">
-<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0 , maximum-scale=1.0, user-scalable=0">
 	<title>{$title}</title>
+<link rel="stylesheet" href="./content/css/subgroups.base.css" media="screen">
+<link rel="stylesheet" href="./content/css/subgroups.main.css">
+<link rel="stylesheet" href="./content/css/font-awesome.min.css">
 </head>
 <body>
-{*这是注释*}
-{$content} + {$title}
+
+<!-- mainbody start -->
+<div class="mainbdoy">
+	<div class="blank-100"></div>
+	<div class="blank-100"></div>
+	<div class="container">
+		<div class="row" style="margin:0 20%">
+			<div class="col-md-12">
+				<form class="form-inline" method="get" action="list.php">
+		        <div class="form-group">
+		            <input type="text" class="form-control" id="keywordsid" name="keywords" placeholder="关键字..." value="">
+		            <button type="submit" class="btn btn-search"></button>
+		        </div>
+		    	</form>
+			</div>
+			<div class="blank-8"></div>
+			<div class="col-md-12">
+				<div class="hotwords">
+			       {foreach key=key item=item from=$keywords}
+			       	<span>{$item}</span>
+			       {/foreach}
+			    </div>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- mainbody end -->
 </body>
 </html>

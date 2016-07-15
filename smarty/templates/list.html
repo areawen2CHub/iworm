@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh_CN">
+<head>
+<meta charset="utf-8">
+<meta http-equiv = "X-UA-Compatible" content = "IE=edge,chrome=1" />
+<meta name="description" content="">
+<meta name="keywords" content="">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0 , maximum-scale=1.0, user-scalable=0">
+	<title>{$title}</title>
+<link rel="stylesheet" href="./content/css/subgroups.base.css" media="screen">
+<link rel="stylesheet" href="./content/css/subgroups.main.css">
+<link rel="stylesheet" href="./content/css/font-awesome.min.css">
+</head>
+<body>
+<!-- 头部 start -->
+<div class="header-home">
+    <div class="header-main nav-fixed-situ">
+        <div class="container">
+	       <div class="row">
+				<div class="col-md-6">
+					<form class="form-inline" method="post" action="index.php">
+			        <div class="form-group">
+			            <input type="text" class="form-control" name="keywords" placeholder="关键字..." value="{$keywords}">
+			            <button type="submit" class="btn btn-search"></button>
+			        </div>
+			    	</form>
+				</div>
+			</div>
+            <div class="row">
+                <div class="col-md-9 col-sm-8 col-xs-6">
+                    <div class="header-menu">
+                        <ul id="nav">
+                           <li><a href=""><i class="icon-comments"></i>&nbsp;娱乐新闻</a></li>
+                           <li><a href=""><i class="icon-book"></i>&nbsp;科技人文</a></li>
+                           <li><a href=""><i class="icon-info-sign"></i>&nbsp;当下时政</a></li>
+                           <li><a href=""><i class="icon-question-sign"></i>&nbsp;奇闻趣事</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 头部 end -->
+<!-- mainbody start -->
+<div class="mainbdoy">
+	<div class="blank-100"></div>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-6">
+				<ul>
+					<li>
+						<div class="image image-text-list">
+                             <div class="inner-area-content">
+                             	{foreach key=key item=item from=$searchList}
+                                <a href="{$item->url}"><h3>{$item->title}</h3></a>
+                                <p>{$item->description}</p>
+                                <p><a href="{$item->url}">{$item->url}</a></p>
+                                {/foreach}
+                             </div>    
+                        </div>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- mainbody end -->
+</body>
+</html>

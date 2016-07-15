@@ -1,5 +1,6 @@
 <?php if(!defined('SUBGROUPS')) exit('System Error!');
 
+$cfg_title = '为雅汇-做雅人';
 // $cfg_webname = '湖南奥昇信息科技有限公司';
 // $cfg_weburl = 'http://localhost';
 // $cfg_webpath = '/';
