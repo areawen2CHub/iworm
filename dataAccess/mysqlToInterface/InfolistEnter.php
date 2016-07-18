@@ -1,6 +1,6 @@
 <?php if(!defined('SUBGROUPS')) exit('System Error!');
 
-require_once(BASE_DATAACCESS.DATA_INTERFACE.'IInfolistEnter.php');
+require_once(BASE_DATAACCESS.DATA_INTER.'IInfolistEnter.php');
 require_once(BASE_SYSTEM.'mysql.php');
 
 //	实现关信息列表接口
@@ -18,7 +18,7 @@ class InfolistEnter implements IInfolistEnter{
 		$this->mysql = new MySQL();
 	}
 
-	/*
+	/**
 	 * 获取查询列表信息
 	 *
 	 */
@@ -60,6 +60,31 @@ class InfolistEnter implements IInfolistEnter{
 		$sql1 .=') order by createtime desc limit 0,10';
 		$searchArr = $this->mysql->query($sql1);
 		return $searchArr;
+	}
+	
+	/**
+	 * 增加infolist
+	 *
+	 * @param  obj $infolistObj
+	 * @return 影响行数
+	 * @update 2016-07-18
+	 */
+	public function addInfolist(infolistEntity $infolistObj){
+		$sql = 'insert into v_db_infolist (title, urlid, keywords, description, picurl, hits, orderid, createtime) values';
+		$str = '(":title",:urlid,":keywords",":description",":picurl",:hits,:orderid,"'.GetMkTime(time()).'")';
+		$arr = array
+		(
+				new MysqlParam(":title", $infolistObj->title),
+				new MysqlParam(":urlid", $infolistObj->urlId),
+				new MysqlParam(":keywords", $infolistObj->url),
+				new MysqlParam(":description", $infolistObj->description),
+				new MysqlParam(":picurl", $infolistObj->picurl),
+				new MysqlParam(":hits", $infolistObj->hits),
+				new MysqlParam(":orderid", $infolistObj->orderid)
+		);
+		$sql .= paramForm($str, $arr);
+		$count = $this->mysql->exec($sql);
+		return $count;
 	}
 }
 ?>

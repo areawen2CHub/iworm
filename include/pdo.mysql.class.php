@@ -37,26 +37,23 @@ class MySQL
 
 	//	构造函数
 	function __construct(){
-		$this->dbType     = $GLOBALS['db_type'];
-		$this->dbName     = $GLOBALS['db_name'];
-		$this->dbUser     = $GLOBALS['db_user'];
-		$this->dbPassword = $GLOBALS['db_pwd'];
-		$this->dbHost     = $GLOBALS['db_host'];
-		$this->dbConn     = "$this->dbType:host=$this->dbHost;dbname=$this->dbName";
-
-		$this->saveCheck = true;
-		$this->pdo = null;
+		$this->initialise();
 	}
 
 	//	供低版本PHP使用
 	function MySQL(){
+		$this->__construct();
+	}
+	
+	//	初始化函数
+	private function initialise(){
 		$this->dbType     = $GLOBALS['db_type'];
 		$this->dbName     = $GLOBALS['db_name'];
 		$this->dbUser     = $GLOBALS['db_user'];
 		$this->dbPassword = $GLOBALS['db_pwd'];
 		$this->dbHost     = $GLOBALS['db_host'];
 		$this->dbConn     = "$this->dbType:host=$this->dbHost;dbname=$this->dbName";
-
+		
 		$this->saveCheck = true;
 		$this->pdo = null;
 	}

@@ -1,20 +1,14 @@
 <?php if(!defined('SUBGROUPS')) exit('System Error!');
 
-//	搜索展示结果Model
-class searchListModel{
-	//	标题
-	var $title;
+//	获取搜索urlModel
+class searchUrlModel{
+	//	urlID
+	var $id;
 	
-	//	关键字
-	var $keywords;
+	//	hostID
+	var $hostid;
 	
-	//	描述
-	var $description;
-	
-	// 创建时间
-	var $createTime;
-	
-	//	来源链接
+	//	url地址
 	var $url;
 }
 ?>

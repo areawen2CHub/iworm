@@ -1,5 +1,4 @@
-<?php   if(!defined('IN_VYAHUI')) exit('Request Error!');
-//header("content-Type: text/html; charset=utf-8");
+<?php if(!defined('SUBGROUPS')) exit('System Error!');
 
 /*
 **************************
@@ -20,28 +19,28 @@ person: zhang
 
 class HTML
 {
-	var $id;
-	var $url;
-	var $html;
-    var $charset;
-    var $hostid;
-    var $host;
-    var $status;
+	private $id;
+	private $url;
+	private $html;
+    private $charset;
+    private $hostid;
+    private $host;
+    private $status;
 
 
     // 初始化变量
-    function __construct($id,$hostid,$url){
+    public function __construct($id,$hostid,$url){
         // 初始化
         $this->status = $this->Initialise($id,$hostid,$url);
     }
 
     // 兼容低版本
-	function HTML($id,$hostid,$url){
+	public function HTML($id,$hostid,$url){
          $this->__construct($id,$url);
 	}
 
     // 初始化
-    function Initialise($id,$hostid,$url){
+    private function Initialise($id,$hostid,$url){
     	// 引用数据库全局变量
         global $dosql;
         // 初始化$id

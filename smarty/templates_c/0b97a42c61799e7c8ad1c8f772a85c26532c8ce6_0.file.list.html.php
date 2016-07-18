@@ -1,17 +1,17 @@
 <?php
-/* Smarty version 3.1.29, created on 2016-07-15 09:30:08
+/* Smarty version 3.1.29, created on 2016-07-18 02:17:23
   from "D:\workspace\iworm\smarty\templates\list.html" */
 
 if ($_smarty_tpl->smarty->ext->_validateCompiled->decodeProperties($_smarty_tpl, array (
   'has_nocache_code' => false,
   'version' => '3.1.29',
-  'unifunc' => 'content_5788ad20e27de0_03103233',
+  'unifunc' => 'content_578c3c3393a889_02787252',
   'file_dependency' => 
   array (
     '0b97a42c61799e7c8ad1c8f772a85c26532c8ce6' => 
     array (
       0 => 'D:\\workspace\\iworm\\smarty\\templates\\list.html',
-      1 => 1468575005,
+      1 => 1468808239,
       2 => 'file',
     ),
   ),
@@ -19,7 +19,7 @@ if ($_smarty_tpl->smarty->ext->_validateCompiled->decodeProperties($_smarty_tpl,
   array (
   ),
 ),false)) {
-function content_5788ad20e27de0_03103233 ($_smarty_tpl) {
+function content_578c3c3393a889_02787252 ($_smarty_tpl) {
 ?>
 <!DOCTYPE html>
 <html lang="zh_CN">
@@ -42,7 +42,7 @@ function content_5788ad20e27de0_03103233 ($_smarty_tpl) {
         <div class="container">
 	       <div class="row">
 				<div class="col-md-6">
-					<form class="form-inline" method="post" action="index.php">
+					<form class="form-inline" method="get" action="list.php">
 			        <div class="form-group">
 			            <input type="text" class="form-control" name="keywords" placeholder="关键字..." value="<?php echo $_smarty_tpl->tpl_vars['keywords']->value;?>
 ">
@@ -73,6 +73,7 @@ function content_5788ad20e27de0_03103233 ($_smarty_tpl) {
 	<div class="container">
 		<div class="row">
 			<div class="col-md-6">
+			    <span>找到约5555条记录</span>
 				<ul>
 					<li>
 						<div class="image image-text-list">

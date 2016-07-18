@@ -8,6 +8,7 @@
 require_once(BASE_INCLUDE.'conf.php');				//	引入数据库配置文件
 require_once(BASE_INCLUDE.'common.func.php');	    //	常用函数
 require_once(BASE_INCLUDE.'common.conf.php');	    //	常用配置
+require_once(BASE_HELPR.'enumHelpr.php');	        //	全局通用枚举类
 require_once(BASE_INCLUDE.'pdo.mysql.class.php');	//	引入数据库类
 
 ?>

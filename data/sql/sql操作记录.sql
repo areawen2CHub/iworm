@@ -46,14 +46,15 @@ use iworm_db;
 set SQL_SAFE_UPDATES=0;
 
 
-
-
-
-
-
 select * from v_db_keywords;
 
-
 select * from v_db_host;
+select * from v_db_charset;
+select * from v_db_url;
+select * from v_db_infolist;
+
+alter table v_db_host modify isusing enum(1,0) comment '是否已使用过，0未使用；1使用';
+
+
 
 

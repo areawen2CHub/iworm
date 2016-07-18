@@ -2,9 +2,9 @@
 
 require_once('\system\sys.php');                            	  //	引入系统文件
 require_once(BASE_SMARTY.SMARTY_CONFIGS.'config.php');            //	引用模板配置文件
-require_once (BASE_BUSINESS.'iwormBess.php');
+require_once (BASE_BUSINESS.'indexBess.php');
 
-$_iwormBess = new iwormBess();
+$_indexBess = new indexBess();
 
 global $smarty;
 
@@ -15,7 +15,7 @@ $keywords = htmlspecialchars($_GET['keywords']);
 $title = $keywords.'--'.'磁力搜索';
 
 //	获取查询结果集
-$searchList = $_iwormBess->getSearchList($keywords);
+$searchList = $_indexBess->getSearchList($keywords);
 
 $smarty->assign('title',$title);
 $smarty->assign('keywords',$keywords);

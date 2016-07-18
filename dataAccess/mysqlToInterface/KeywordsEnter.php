@@ -1,6 +1,6 @@
 <?php if(!defined('SUBGROUPS')) exit('System Error!');
 
-require_once(BASE_DATAACCESS.DATA_INTERFACE.'IKeywordsEnter.php');		
+require_once(BASE_DATAACCESS.DATA_INTER.'IKeywordsEnter.php');		
 require_once(BASE_SYSTEM.'mysql.php');									
 
 //	实现关键字接口
@@ -9,12 +9,17 @@ class KeywordsEnter implements IKeywordsEnter{
 	private $mysql;
 	
 	//	构造函数
-	function __construct(){
-		$this->mysql = new MySQL();
+	public function __construct(){
+		$this->initialise();
 	}
 	
 	//	适应低版本
-	function KeywordsEnter(){
+	public function KeywordsEnter(){
+		$this->__construct();
+	}
+	
+	//	初始化函数
+	private function initialise(){
 		$this->mysql = new MySQL();
 	}
 	

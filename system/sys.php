@@ -22,10 +22,11 @@ define('BASE_CONTENT', BASE_PATH.'\content\\');					//	定义content文件夹绝
 define('BASE_DATAACCESS', BASE_PATH.'\dataAccess\\');		    //	定义dataAccess文件夹绝对路径
 define('BASE_BUSINESS', BASE_PATH.'\business\\');		        //	定义business文件夹绝对路径
 define('BASE_MODEL', BASE_PATH.'\model\\');		                //	定义model文件夹绝对路径
-
+define('BASE_HELPR', BASE_PATH.'\helpr\\');		                //	定义helper文件夹绝对路径
+define('BASE_ENTITY', BASE_PATH.'\entity\\');		            //	定义entity文件夹绝对路径
 //	二级目录
 define('SMARTY_CONFIGS','\configs\\');							//	smarty模板配置文件
-define('DATA_INTERFACE','\interface\\');                        //	接口文件
-define('MYSQL','\mysqlToInterface\\');                          //	实现文件
+define('DATA_INTER','\interface\\');                            //	接口
+define('DATA_TYPE','\mysqlToInterface\\');                          //	实现接口的数据库类型
 
 ?>
