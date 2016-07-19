@@ -2,6 +2,7 @@
 
 require_once(BASE_DATAACCESS.DATA_INTER.'IInfolistEnter.php');
 require_once(BASE_SYSTEM.'mysql.php');
+require_once(BASE_HELPR.'enumHelpr.php');
 
 //	实现关信息列表接口
 class InfolistEnter implements IInfolistEnter{
@@ -9,12 +10,17 @@ class InfolistEnter implements IInfolistEnter{
 	private $mysql;
 
 	//	构造函数
-	function __construct(){
-		$this->mysql = new MySQL();
+	public function __construct(){
+		$this->initialise();
 	}
 
 	//	适应低版本
-	function InfolistEnter(){
+	public function InfolistEnter(){
+		$this->__construct();
+	}
+	
+	//	初始化
+	private function initialise(){
 		$this->mysql = new MySQL();
 	}
 
@@ -24,7 +30,7 @@ class InfolistEnter implements IInfolistEnter{
 	 */
 	public function getSearchList($kwArr){
 		$sql1  = 'select title,keywords,description,i.createtime createtime,url from v_db_infolist i ';
-		$sql1 .= 'left join v_db_url u on i.urlid=u.id  where i.delstate="false" and checkinfo=true and (';
+		$sql1 .= 'left join v_db_url u on i.urlid=u.id  where i.delstate='.enumIsDel::noDelete.' and checkinfo='.enumIsCheck::isCheck.' and (';
 		
 		// 收录关键字
 		for($i=0; $i<count($kwArr); $i++){
@@ -70,8 +76,8 @@ class InfolistEnter implements IInfolistEnter{
 	 * @update 2016-07-18
 	 */
 	public function addInfolist(infolistEntity $infolistObj){
-		$sql = 'insert into v_db_infolist (title, urlid, keywords, description, picurl, hits, orderid, createtime) values';
-		$str = '(":title",:urlid,":keywords",":description",":picurl",:hits,:orderid,"'.GetMkTime(time()).'")';
+		$sql = 'insert into v_db_infolist (title, urlid, keywords, description, picurl, hits, orderid, createtime,checkinfo) values';
+		$str = '(":title",:urlid,":keywords",":description",":picurl",:hits,:orderid,"'.GetMkTime(time()).'",'.enumIsCheck::isCheck.')';
 		$arr = array
 		(
 				new MysqlParam(":title", $infolistObj->title),

@@ -2,6 +2,7 @@
 
 require_once(BASE_DATAACCESS.DATA_INTER.'IUrlEnter.php');		
 require_once(BASE_SYSTEM.'mysql.php');	
+require_once(BASE_HELPR.'enumHelpr.php');
 
 class UrlEnter implements IUrlEnter{
 	//	数据库操作对象
@@ -30,7 +31,7 @@ class UrlEnter implements IUrlEnter{
 	 * @update  2016-07-18
 	 */
 	public function getSearchUrl(){
-		$sql = 'select id,hostid,url from vi_url limit 0,100';
+		$sql = 'select id,hostid,url from vi_url limit 0,1';
 		$searchUrl = $this->mysql->query($sql);
 		return $searchUrl;
 	}
@@ -43,7 +44,7 @@ class UrlEnter implements IUrlEnter{
 	 * @update  2016-07-18
 	 */
 	public function recordVisit($id){
-		$sql = 'update v_db_url set incstate="true", viscount=viscount+1, lasttime=neartime, neartime="'.GetMkTime(time()).'" where id='.$id;
+		$sql = 'update v_db_url set incstate='.enumIncState::isIncState.', viscount=viscount+1, lasttime=neartime, neartime="'.GetMkTime(time()).'" where id='.$id;
 		$count = $this->mysql->exec($sql);
 		return $count;
 	}
@@ -56,45 +57,7 @@ class UrlEnter implements IUrlEnter{
 	 * @update  2016-07-18
 	 */
 	public function isEmptyUrl($id){
-		$sql = 'update v_db_url set isempty="true" where id='.$id;
-		$count = $this->mysql->exec($sql);
-		return $count;
-	}
-	
-	/**
-	 * 通过hostid判断charset是否存在
-	 *
-	 * @param   $hostid         int
-	 * @return  true/false
-	 * @update  2016-07-18
-	 */
-	public function isExistCharset($hostid){
-		$sql = 'select id from v_db_charset where hostid='.$hostid;
-		$id = $this->mysql->querySingle($sql);
-		if($id > 0){
-			return true;
-		}else{
-			return false;
-		}
-	}
-	
-	/**
-	 * 通过hostid判断charset是否存在
-	 *
-	 * @param   $hostid         int
-	 * @param   $charset        string
-	 * @return  影响行数
-	 * @update  2016-07-18
-	 */
-	public function addCharset($hostid,$charset){
-		$sql = 'insert into v_db_charset (hostid,charset) values';
-		$str = '(":hostid",":charset")';
-		$arr = array
-		(
-			new MysqlParam(":hostid", $hostid),
-			new MysqlParam(":charset", $charset)
-		);
-		$sql .= paramForm($str, $arr);
+		$sql = 'update v_db_url set isempty='.enumIsEmpty::isEmpty.' where id='.$id;
 		$count = $this->mysql->exec($sql);
 		return $count;
 	}
@@ -107,7 +70,7 @@ class UrlEnter implements IUrlEnter{
 	 * @update 2016-07-18
 	 */
 	public function isExistUrl($url){
-		$sql = 'select id from v_db_url where url='.$url.' limit 0,1';
+		$sql = 'select id from v_db_url where url="'.$url.'" limit 0,1';
 		$id = $this->mysql->querySingle($sql);
 		if($id > 0){
 			return true;
@@ -137,8 +100,8 @@ class UrlEnter implements IUrlEnter{
 	 * @update 2016-07-18
 	 */
 	public function addUrl(urlEntity $urlObj){
-		$sql = 'insert into v_db_url (hostid,parenturl,url,createtime,inccount) values';
-		$str = '(":hostid",":parenturl",":url","'.GetMkTime(time()).'",1)';
+		$sql = 'insert into v_db_url (hostid,parenturl,url,createtime,inccount,lasttime) values';
+		$str = '(:hostid,":parenturl",":url","'.GetMkTime(time()).'",1,"'.GetMkTime(time()).'")';
 		$arr = array
 		(
 			new MysqlParam(":hostid", $urlObj->hostId),

@@ -311,7 +311,7 @@ if(!function_exists('Writef'))
 	}
 }
 
-/*
+/**
 *
 * 格式化参数，主要用于Mysql
 *
@@ -324,6 +324,21 @@ if(!function_exists('paramForm')){
 			$str = str_replace($arr[$i]->key, $arr[$i]->value, $str);
 		}
 		return $str;
+	}
+}
+
+/**
+ * 判断字符串中是否存在某个字符/字符串
+ *
+ * @param   $objstr     string  目标字符串
+ * @param   $handstr    string  操作字符串
+ * @return  fasle/true  bool    查询结果
+ * @update  2016-03-28
+ *
+ */
+if(!function_exists('IsExistStr')){
+	function IsExistStr($objstr,$handstr){
+		return false !== strpos($objstr,$handstr);
 	}
 }
 ?>

@@ -18,7 +18,7 @@ class enumHelpr{
 	
 	//	初始化
 	private function initialise(){
-		$this->isUsing = new enumIsUsing();
+		//$this->isUsing = new enumIsUsing();
 	}
 }
 
@@ -30,8 +30,52 @@ class enumHelpr{
  */
 class enumIsUsing{
 	//	已使用
-	public $isUsing = 1;
+	const isUsing = 1;
 	//	未使用
-	public $noUsing = 0;
+	const noUsing = 0;
+}
+/**
+ * 是否为空
+ * @author zhangxianwen
+ * @update 2016-07-19
+ */
+class enumIsEmpty{
+	//	为空
+	const isEmpty = 1;
+	//	不为空
+	const noEmpty = 0;
+}
+/**
+ * 收录状态
+ * @author zhangxianwen
+ * @update 2016-07-19
+ */
+class enumIncState{
+	//	已访问
+	const isIncState = 1;
+	//	未访问
+	const noIncState = 0;
+}
+/**
+ * 是否删除
+ * @author zhangxianwen
+ * @update 2016-07-19
+ */
+class enumIsDel{
+	//	已删除
+	const isDelete = 1;
+	//	未删除
+	const noDelete = 0;
+}
+/**
+ * 是否审核
+ * @author zhangxianwen
+ * @update 2016-07-19
+ */
+class enumIsCheck{
+	//	已删除
+	const isCheck = 1;
+	//	未删除
+	const noCheck = 0;
 }
 ?>

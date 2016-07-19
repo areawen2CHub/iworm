@@ -86,6 +86,10 @@ class HostEnter implements IHostEnter{
 	public function getHostId($hostName){
 		$sql = 'select id from v_db_host where hostname="'.$hostName.'" limit 0,1';
 		$hostId = $this->mysql->querySingle($sql);
-		return $hostId;
+		if($hostId > 0){
+			return $hostId;
+		}else{
+			return -1;
+		}
 	}
 }

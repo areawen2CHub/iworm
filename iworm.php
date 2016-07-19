@@ -2,7 +2,6 @@
 
 require_once('\system\sys.php');                            	  //	引入系统文件
 require_once(BASE_SMARTY.SMARTY_CONFIGS.'config.php');            //	引用模板配置文件
-require_once (BASE_BUSINESS.'indexBess.php');
 require_once (BASE_BUSINESS.'iwormBess.php');
 
 $_iwormBess = new iwormBess();
@@ -35,19 +34,29 @@ set_time_limit(0);
 //     sleep(60);
 // }
 
+// function IsExistStr2($objstr,$handstr){
+// 	return false !== strpos($objstr,$handstr);
+// }
+
+// $isExist = IsExistStr2('goal.sports.163.com','www.');
+// if(!$isExist){
+// 	echo 'www.';
+// }
+
+
 while(true){
-	// 抓取网页
+	//	抓取网页
 	$i = 0;
 	$j = 0;
 	
 	//	获取查询url对象数组
-	$searcUrlArr = $_iwormBess->getSearchUrl();
-	for($i=0;$i<count($searcUrlArr);$i++){
-		if(!empty($searcUrlArr[$i]->id) && !empty($searcUrlArr[$i]->hostid) && !empty($searcUrlArr[$i]->url)){
+	$searchUrlArr = $_iwormBess->getSearchUrl();
+	for($i=0;$i<count($searchUrlArr);$i++){
+		if(!empty($searchUrlArr[$i]->id) && !empty($searchUrlArr[$i]->hostid) && !empty($searchUrlArr[$i]->url)){
 			if($i>=10){
 				break;
 			}else{
-				$stateInfo = $_iwormBess->initHtml($searcUrlArr[$i]->id, $searcUrlArr[$i]->hostid, $searcUrlArr[$i]->url);
+				$stateInfo = $_iwormBess->initHtml($searchUrlArr[$i]->id, $searchUrlArr[$i]->hostid, $searchUrlArr[$i]->url);
 				if($stateInfo == 'ok'){
 					$i++;
 				}
@@ -56,7 +65,7 @@ while(true){
 		}
 		$j++;
 	}
-	// 休眠1分钟
-	sleep(60);
+	// 休眠1秒
+	sleep(1);
 }
 ?>
