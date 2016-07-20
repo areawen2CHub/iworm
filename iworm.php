@@ -2,7 +2,7 @@
 
 require_once('\system\sys.php');                            	  //	引入系统文件
 require_once(BASE_SMARTY.SMARTY_CONFIGS.'config.php');            //	引用模板配置文件
-require_once (BASE_BUSINESS.'iwormBess.php');
+require_once(BASE_BUSINESS.'iwormBess.php');
 
 $_iwormBess = new iwormBess();
 
@@ -66,6 +66,6 @@ while(true){
 		$j++;
 	}
 	// 休眠1秒
-	sleep(1);
+	sleep(0.001);
 }
 ?>

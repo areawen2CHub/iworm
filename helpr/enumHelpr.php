@@ -51,9 +51,9 @@ class enumIsEmpty{
  * @update 2016-07-19
  */
 class enumIncState{
-	//	已访问
+	//	已收录
 	const isIncState = 1;
-	//	未访问
+	//	未收录
 	const noIncState = 0;
 }
 /**

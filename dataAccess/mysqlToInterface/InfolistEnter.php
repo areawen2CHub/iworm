@@ -29,8 +29,8 @@ class InfolistEnter implements IInfolistEnter{
 	 *
 	 */
 	public function getSearchList($kwArr){
-		$sql1  = 'select title,keywords,description,i.createtime createtime,url from v_db_infolist i ';
-		$sql1 .= 'left join v_db_url u on i.urlid=u.id  where i.delstate='.enumIsDel::noDelete.' and checkinfo='.enumIsCheck::isCheck.' and (';
+		$sql1  = 'select title,keywords,description,createtime,url from v_db_infolist';
+		$sql1 .= ' where delstate='.enumIsDel::noDelete.' and checkinfo='.enumIsCheck::isCheck.' and (';
 		
 		// 收录关键字
 		for($i=0; $i<count($kwArr); $i++){
@@ -76,17 +76,18 @@ class InfolistEnter implements IInfolistEnter{
 	 * @update 2016-07-18
 	 */
 	public function addInfolist(infolistEntity $infolistObj){
-		$sql = 'insert into v_db_infolist (title, urlid, keywords, description, picurl, hits, orderid, createtime,checkinfo) values';
-		$str = '(":title",:urlid,":keywords",":description",":picurl",:hits,:orderid,"'.GetMkTime(time()).'",'.enumIsCheck::isCheck.')';
+		$sql = 'insert into v_db_infolist (title, urlid, keywords, description, picurl, hits, orderid, createtime,checkinfo,url) values';
+		$str = '(":title",:urlid,":keywords",":description",":picurl",:hits,:orderid,"'.GetMkTime(time()).'",'.enumIsCheck::isCheck.',":url")';
 		$arr = array
 		(
 				new MysqlParam(":title", $infolistObj->title),
 				new MysqlParam(":urlid", $infolistObj->urlId),
-				new MysqlParam(":keywords", $infolistObj->url),
+				new MysqlParam(":keywords", $infolistObj->keywords),
 				new MysqlParam(":description", $infolistObj->description),
 				new MysqlParam(":picurl", $infolistObj->picurl),
 				new MysqlParam(":hits", $infolistObj->hits),
-				new MysqlParam(":orderid", $infolistObj->orderid)
+				new MysqlParam(":orderid", $infolistObj->orderid),
+				new MysqlParam(":url", $infolistObj->url)
 		);
 		$sql .= paramForm($str, $arr);
 		$count = $this->mysql->exec($sql);

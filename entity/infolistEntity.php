@@ -18,5 +18,7 @@ class infolistEntity{
 	var $hits;
 	//	排序
 	var $orderid;
+	//	url
+	var $url;
 }
 ?>

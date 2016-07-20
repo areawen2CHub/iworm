@@ -26,7 +26,7 @@ class HostEnter implements IHostEnter{
 		//$this->enumHelpr = new enumHelpr();
 	}
 	
-	/*
+	/**
 	 * 插入主机
 	 *
 	 * @param	$hostName		string
@@ -47,7 +47,7 @@ class HostEnter implements IHostEnter{
 		return $count;
 	}
 	
-	/*
+	/**
 	 * 判断主机是否存在
 	 *
 	 * @param	$hostName		string
@@ -63,7 +63,8 @@ class HostEnter implements IHostEnter{
 			return false;
 		}
 	}
-	/*
+	
+	/**
 	 * 更新主机信息
 	 *
 	 * @param	$hostName		string
@@ -88,6 +89,36 @@ class HostEnter implements IHostEnter{
 		$hostId = $this->mysql->querySingle($sql);
 		if($hostId > 0){
 			return $hostId;
+		}else{
+			return -1;
+		}
+	}
+	
+	/**
+	 * 获取待抓取的主机
+	 *
+	 * @return 主机对象数据
+	 * @update 2016-07-20
+	 */
+	public function getSearchHost(){
+		//	获取待抓取的主机
+		$sql = 'select id,hostname from v_db_host where isusing='.enumIsUsing::isUsing.' and neartime<'.(GetMkTime(time()) - 7*24*360).' limit 0,1';
+		$hostObj = $this->mysql->query($sql);
+		return $hostObj;
+	}
+	
+	/**
+	 * 记录对主机的访问
+	 * 
+	 * @param	string	$hostName
+	 * @return	int		$count
+	 * @update	2016-07-20
+	 */
+	public function recordVisitHost($hostName){
+		$sql = 'update v_db_host set neartime='.GetMkTime(time()).' where hostname="'.$hostName.'"';
+		$count = $this->mysql->exec($sql);
+		if($count > 0){
+			return $count;
 		}else{
 			return -1;
 		}

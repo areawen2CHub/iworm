@@ -31,7 +31,7 @@ class UrlEnter implements IUrlEnter{
 	 * @update  2016-07-18
 	 */
 	public function getSearchUrl(){
-		$sql = 'select id,hostid,url from vi_url limit 0,1';
+		$sql = 'select id,hostid,url from vi_url limit 0,100';
 		$searchUrl = $this->mysql->query($sql);
 		return $searchUrl;
 	}

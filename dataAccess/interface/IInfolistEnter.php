@@ -4,7 +4,6 @@
 require_once(BASE_ENTITY.'infolistEntity.php');
 
 //	关信息列表接口
-
 interface IInfolistEnter{
 	/**
 	 * 获取查询列表信息

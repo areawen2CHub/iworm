@@ -51,7 +51,7 @@ class indexBess{
 		return $arr;
 	}
 	
-	/*
+	/**
 	 * 获取查询结果列表
 	 *
 	 * @param	string	$keywords

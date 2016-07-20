@@ -45,16 +45,39 @@ select * from v_db_host;
 use iworm_db;
 set SQL_SAFE_UPDATES=0;
 
+alter table v_db_host modify isusing tinyint comment '是否已使用过，0未使用；1使用';
+alter table v_db_url modify incstate tinyint comment '收录状态，0未收录；1已收录';
+alter table v_db_url modify incsuccess tinyint comment '是否收录成功，0收录失败；1收录成功';
+alter table v_db_url modify delstate tinyint comment '是否删除，0未删除；1已删除';
+alter table v_db_url modify isempty tinyint comment '是否为空，0不为空；1是为空';
+update v_db_url set incsuccess=0 where incsuccess<1 and id>0;
+
+alter table v_db_url drop deltime;
+
+alter table v_db_url modify neartime int(10) unsigned null comment '最近访问时间';
+alter table v_db_url modify lasttime int(10) unsigned null comment '上一次访问时间';
+
+alter table v_db_url modify viscount int(10) unsigned not null default 0 comment '访问次数';
+alter table v_db_infolist modify classid int unsigned not null default 0 comment '类型Id';
+alter table v_db_infolist modify isoriginal tinyint unsigned not null default 0 comment '是否原创';
+update v_db_infolist set isoriginal = 0 where isoriginal=1 and id>0;
+alter table v_db_infolist modify delstate tinyint unsigned not null default 0 comment '是否删除';
+update v_db_infolist set delstate = 0 where delstate=1 and id>0;
+alter table v_db_infolist modify checkinfo tinyint unsigned not null default 0 comment '是否审核';
+alter table v_db_infolist modify deltime int(10) default 0 comment '删除时间';
+
+select id from v_db_host where hostname = 'www.epay.163.com1';
+
+select count(*) from v_db_host;
+select count(*) from v_db_url;
+select count(*) from v_db_infolist;
+
 
 select * from v_db_keywords;
 
-select * from v_db_host;
+select * from v_db_host order by inittime desc;
 select * from v_db_charset;
 select * from v_db_url;
-select * from v_db_infolist;
+select * from v_db_infolist order by createtime desc;
 
-alter table v_db_host modify isusing enum(1,0) comment '是否已使用过，0未使用；1使用';
-
-
-
-
+select id,hostid,url from vi_url limit 0,100;

@@ -1,4 +1,4 @@
-<?php if(!defined('SUBGROUPS')) exit('System Error!');
+<?php
 
 //	引入实现接口操作文件
 require_once(BASE_DATAACCESS.DATA_TYPE.'UrlEnter.php');
@@ -8,9 +8,9 @@ require_once(BASE_DATAACCESS.DATA_TYPE.'CharsetEnter.php');
 require_once(BASE_DATAACCESS.DATA_TYPE.'KeywordsEnter.php');
 
 //	引入model文件
-require_once(BASE_MODEL.'iwormModel.php');
+require_once(BASE_MODEL.'iworm2Model.php');
 
-class iwormBess{
+class iworm2Bess{
 	//	定义url数据库操作对象
 	private $_UrlEnter;
 	//	定义host(主机)数据库操作对象
@@ -21,17 +21,17 @@ class iwormBess{
 	private $_CharsetEnter;
 	//	定义charset(字符集表)数据库操作对象
 	private $_KeywordsEnter;
-	
+
 	//	构造函数
 	public function __construct(){
 		$this->initialise();
 	}
-	
+
 	//	适应低版本
 	public function iwormBess(){
 		$this->__construct();
 	}
-	
+
 	//	初始化函数
 	private function initialise(){
 		$this->_UrlEnter  = new UrlEnter();
@@ -42,103 +42,135 @@ class iwormBess{
 	}
 	
 	/**
-	 * 获取查询url对象列表
-	 * 
-	 * @param	无
-	 * @return  $arr       array  对象数组
-	 * @update  2016-07-18
+	 * 获取待抓取的主机
+	 *
+	 * @return 主机地址
+	 * @update 2016-07-20
 	 */
-	public function getSearchUrl(){
-		//	获取结果集
-		$searchUrl = $this->_UrlEnter->getSearchUrl();
-		
-		//	组装成对象数组
-		$arr = array();
-		for($i=0;$i<count($searchUrl);$i++){
-			$_searchUrlModel = new searchUrlModel();
-			$_searchUrlModel->id = $searchUrl[$i]["id"];
-			$_searchUrlModel->hostid = $searchUrl[$i]["hostid"];
-			$_searchUrlModel->url = $searchUrl[$i]["url"];
-			$arr[count($arr)] = $_searchUrlModel;
-		}
-		return $arr;
+	public function getSearchHost(){
+		$hostObj = $this->_HostEnter->getSearchHost();
+		$_searchHostModel = new searchHostModel();
+		$_searchHostModel->hostId = $hostObj[0]["id"];
+		$_searchHostModel->hostName = $hostObj[0]["hostname"];
+		return $_searchHostModel;
 	}
 	
 	/**
 	 * 初始化抓取
 	 *
-	 * @param	int		$id
-	 * @param	int		$hostid
+	 * @param	int		$hostName
 	 * @param	string	$url
+	 * @update  2016-07-20
 	 */
-	public function initHtml($id,$hostid,$url){
+	public function initHtml($hostId,$hostName){
 		//	定义返回提示信息
 		$backCode = '';
 		//	操作影响行数
 		$count = 0;
-		do{
-			//	更改收录状态、访问数、上次访问时间和最近访问时间
-			$count = $this->_UrlEnter->recordVisit($id);
-			if($count < 1){
-				//	记录url失败
-				$backCode = 'recordVisit记录url失败<br/>';
-				break;
+		do
+		{
+			//	记录对该主机的访问
+			if(!empty($hostName)){
+				$count = $this->_HostEnter->recordVisitHost($hostName);
 			}
-	
+			
 			//	获取Html对象
-			$html = $this->getHtmlObj($url);
+			$html = $this->getHtmlObj($hostName);
 			//	判断抓取的网页
 			if($html === false || strlen($html) < 10){
-				$backCode = $id.'html为空!<br />';
-				//	记录该url抓取为空
-				$this->_UrlEnter->isEmptyUrl($id);
 				break;
 			}
-			
-			//	获取字符集
-			$charset = $this->getHtmlCharset($html);
-			//	如果不为空，则转换
-			if($charset != ''){
-				//	转换字符集
-				$html = $this->changeHtmlCharset($charset, $html);
-				//	插入字符集
-				$this->addCharset($hostid,$charset);
-			}
-			
-			//	获取主机
-			$hostName = $this->getUrlHost($url);
 			
 			//	获取所有url
-			$allurl = $this->getHtmlUrlAll($html, $hostName);
-			// 已经收录的，增加收录次数，未收录的，收录进去
-			for($i=0; $i<count($allurl); $i++){
-				// 获取主机
-				$hostName2 = $this->getUrlHost($allurl[$i]);
-				// 收录主机，或者增加主机收录的url数
-				$count = $this->addHost($hostName2);
-				if($count >= 1){
-					//	收录url或更新点击数
-					$this->addUrl($allurl[$i],$url);
+			$allUrl = $this->getHtmlUrlAll($html, $hostName);
+			for($i=0;$i<count($allUrl);$i++){
+				//	获取主机
+				$hostName2 = $this->getUrlHost($allUrl[$i]);
+				if(!empty($hostName2)){
+					// 收录主机，或者增加主机收录的url数
+					$count = $this->addHost($hostName2);
 				}
+				
+				//	抓取网页内容
+				$html = $this->getHtmlObj($allUrl[$i]);
+				//	判断抓取的网页
+				if($html === false || strlen($html) < 10){
+					//	继续抓取下一个
+					continue;
+				}
+				
+				//	获取字符集
+				$charset = $this->getHtmlCharset($html);
+				//	如果不为空，则转换
+				if($charset != ''){
+					//	转换字符集
+					$html = $this->changeHtmlCharset($charset, $html);
+					//	插入字符集
+					$this->addCharset($hostId,$charset);
+				}
+				
+// 				//	判断$charset
+// 				if(empty($charset)){
+// 					//	
+// 					continue;
+// 				}
+					
+				//	获取文章titie
+				$title = $this->getHtmlTitle($html);
+				if(empty($title)){
+					continue;
+				}
+				
+				//	判断标题出现的次数
+				$times = substr_count($html, $title);
+				//	$title必须出现2-4次，再多可能就是首页了
+				if($times == 0 || $times >=5){
+					//	标题过多
+					continue;
+				}
+				
+				$keywords = $this->getHtmlKeywords($html);
+				//	判断是否存在关键字，或者关键字是否过长
+				if($keywords == '' || strlen($keywords) >= 1000){
+					continue;
+				}
+				//	替换单引号
+				$keywords = str_replace("'", '"', $keywords);
+				
+				$desc = $this->getHtmlDes($html);
+				//	替换单引号
+				$desc = str_replace("'", '"', $desc);
+				//	判断描述是否存在，或者关键字是否过长
+				if($desc == '' || strlen($desc) >= 1000){
+					continue;
+				}
+				
+				//	获取图片
+				if($this->GetHtmlImageOne($html,$hostName2) === false){
+					$picurl = '';
+				}else{
+					$picurl = $this->GetHtmlImageOne($html,$hostName2);
+				}
+				
+				//	创建时间
+				$createtime = GetMkTime(time());
+				//	点击量
+				$hits = mt_rand(50,100);
+				
+				//	创建infolist实体对象
+				$infolistObj = new infolistEntity();
+				//	初始化
+				$infolistObj->title = $title;
+				$infolistObj->urlId = 0;
+				$infolistObj->keywords = $keywords;
+				$infolistObj->description = $desc;
+				$infolistObj->picurl = $picurl;
+				$infolistObj->hits = $hits;
+				$infolistObj->orderid = 0;
+				$infolistObj->url = $allUrl[$i];
+				$count = $this->_InfolistEnter->addInfolist($infolistObj);
 			}
-			
-			//	判断$charset
-			if(empty($charset)){
-				$backCode = 'charset为空，非所需信息!<br />';
-				break;
-			}
-			
-			//	获取文章titie
-			$title = $this->getHtmlTitle($html);
-			if(empty($title)){
-				$backCode = 'title为空，非所需信息!<br />';
-				break;
-			}
-			
-			//	获取内容，若满足条件，则收录
-			$backCode = $this->getHtmlContent($id, $html, $title,$hostName);
-		}while(false);
-		return $backCode;
+		}while (false);
 	}
 	
 	/**
@@ -174,11 +206,10 @@ class iwormBess{
 			$matches = array();
 			preg_match('/Location:(.*?)\n/', $header, $matches);
 			$url = trim(array_pop($matches));
-			curl_setopt($ch, CURLOPT_URL, $this->url);
+			curl_setopt($ch, CURLOPT_URL, $url);
 			curl_setopt($ch, CURLOPT_HEADER, false);
 			$html = curl_exec($ch);
 		}
-		// echo $html;
 	
 		// 关闭cURL对象
 		if ($html == false) {
@@ -187,6 +218,42 @@ class iwormBess{
 		@curl_close($ch);
 	
 		return $html;
+	}
+	
+	/**
+	 * 获取网页所有url
+	 *
+	 * @param   $html        string  网页内容
+	 * @param   $hostName    string  主机名
+	 * @return  $wo_alist    array   符合条件的url集合
+	 * @update  2016-03-29
+	 */
+	function getHtmlUrlAll($html,$hostName){
+		//	获取抓取网页上的所有url
+		preg_match_all('/href=\"([\s\S]*?)\"/',$html,$alist);
+		//	定义存储有效链接地址数组
+		$eff_urllist = array();
+		//	获取有用的url
+		for($i=0,$j=0; $i<count($alist[1]);$i++){
+			//	获取目标iurl
+			$ourl = $alist[1][$i];
+			//	获取第一个字符
+			$fcha = substr($ourl,0,1);
+			//	这样的url不需要
+			//	过滤掉带有单引号的url
+			if($ourl == '/' || IsExistStr($ourl,'.css') || IsExistStr($ourl,'.js') || IsExistStr($ourl,'javascript') || IsExistStr($ourl,'#') || IsExistStr($ourl,"'") || empty($ourl)){
+				continue;
+			}else if($fcha != 'h' && $fcha !='w' && $fcha != '/'){
+				continue;
+			}else if($fcha == '/'){
+				$eff_urllist[$j] = 'http://'.$hostName.$ourl;
+				$j++;
+			}else{
+				$eff_urllist[$j] = $ourl;
+				$j++;
+			}
+		}
+		return $eff_urllist;
 	}
 	
 	/**
@@ -340,95 +407,86 @@ class iwormBess{
 		//	检查是否存在
 		$isExist = $this->_HostEnter->isExistHost($hostName);
 		if(!$isExist){
-			// 如果不存在，则收录
-			// 获取IP
+			//	如果不存在，则收录
+			//	获取IP
 			$hostip = $this->getHostIP($hostName);
-			// 初始化时间
+			//	初始化时间
 			$inittime = GetMkTime(time());
 			$count = $this->_HostEnter->addHost($hostName, $hostip);
 		}else{
-			$count = $this->_HostEnter->updateHost($hostName);
+			//$count = $this->_HostEnter->updateHost($hostName);
 		}
 		return $count;
 	}
 	
 	/**
-	 * 获取网页所有url
+	 * 获取文章标题
 	 *
 	 * @param   $html        string  网页内容
-	 * @param   $hostName    string  主机名
-	 * @return  $wo_alist    array   符合条件的url集合
+	 * @return  $tit         string  文章标题
 	 * @update  2016-03-29
+	 *
 	 */
-	function getHtmlUrlAll($html,$hostName){
-		//	获取抓取网页上的所有url
-		preg_match_all('/href=\"([\s\S]*?)\"/',$html,$alist);
-		//	定义存储有效链接地址数组
-		$eff_urllist = array();
-		//	获取有用的url
-		for($i=0,$j=0; $i<count($alist[1]);$i++){
-			//	获取目标iurl
-			$ourl = $alist[1][$i];
-			//	获取第一个字符
-			$fcha = substr($ourl,0,1);
-			//	这样的url不需要
-			//	过滤掉带有单引号的url
-			if($ourl == '/' || IsExistStr($ourl,'.css') || IsExistStr($ourl,'.js') || IsExistStr($ourl,'javascript') || IsExistStr($ourl,'#') || IsExistStr($ourl,"'") || empty($ourl)){
-				continue;
-			}else if($fcha != 'h' && $fcha !='w' && $fcha != '/'){
-				continue;
-			}else if($fcha == '/'){
-				$eff_urllist[$j] = 'http://'.$hostName.$ourl;
-				$j++;
+	private function getHtmlTitle($html){
+		//	获取本页面的标题
+		preg_match_all( '/<title>([\s\S]*?)<\/title>/' , $html , $tlist );
+		//	获取匹配到的title
+		if(isset($tlist[1][0])){
+			$tit = $tlist[1][0];
+			//	去掉标题所属模块
+			if($tpos = stripos($tit, '_')){
+				$tit = substr($tit, 0,$tpos);
+			}else if($tpos = stripos($tit, '-')){
+				$tit = substr($tit, 0,$tpos);
 			}else{
-				$eff_urllist[$j] = $ourl;
-				$j++;
+				$tit = $tit;
 			}
+		}else{
+			$tit = '';
 		}
-		return $eff_urllist;
+		return $tit;
 	}
 	
 	/**
-	 * 插入url
-	 *
-	 * @parame  $url         string  需要插入的url
-	 * @parame  $parentUrl   string  需要插入的url来源url
-	 * @return  无
-	 * @update  2016-03-29
-	 *
+	 * 获取关键字
+	 * 
+	 * @param 	obj 	$html
+	 * @return 	string  $keywords
+	 * @update	2016-07-20
 	 */
-	private function addUrl($url,$parentUrl){
-		//	影响行数
-		$count = 0;
-		// 检查是否存在
-		$isExist = $this->_UrlEnter->isExistUrl($url);
-		if($isExist){
-			// 如果存在，增加一次收录
-			$count = $this->_UrlEnter->addUrlIncCount($url);
-		}else{
-			// 如果不存在，则收录该url
-			$hostName = $this->getUrlHost($url);
-			// 获取主机id
-			$hostId =$this->_HostEnter->getHostId($hostName);
-			//	创建url实体
-			$_url = new urlEntity();
-			//	初始化实体
-			$_url->hostId = $hostId;
-			$_url->parentUrl = $parentUrl;
-			$_url->url = $url;
-			
-			//	若$hostId为空，或者url的长度大于250，则不予保存
-			if($hostId > 0 && strlen($url) < 250){
-				$count = $this->_UrlEnter->addUrl($_url);
-			}
-			return $count;
+	private function getHtmlKeywords($html){
+		$keywords = '';
+		//	获取关键字
+		preg_match_all('/<meta[\s]+name=\"keywords\"[\s]+content=\"([\s\S]*?)\"[\s]*[\/]?>/', $html, $kwlist);
+		if(!empty($kwlist[1][0])){
+			//	替换掉单引号
+			$keywords = str_replace("'", '"', $kwlist[1][0]);
 		}
+		return $keywords;
+	}
+	
+	/**
+	 * 获取描述
+	 *
+	 * @param 	obj 	$html
+	 * @return 	string  $description
+	 * @update	2016-07-20
+	 */
+	private function getHtmlDes($html){
+		$description = '';
+		//	获取描述
+		preg_match_all('/<meta[\s]+name=\"description\"[\s]+content=\"([\s\S]*?)\"[\s]*[\/]?>/', $html, $deslist);
+		if(!empty($deslist[1][0])){
+			$description = str_replace("'", '"', $deslist[1][0]);
+		}
+		return $description ;
 	}
 	
 	/**
 	 * 获取网页上一张图片，用于前段缩略显示
 	 *
-	 * @param   无
+	 * @param   $html 		  obj
+	 * @param   $hostName     string
 	 * @return  $ret_imgurl   string    图片存储在本地的位置
 	 * @update  2016-04-06
 	 *
@@ -462,16 +520,14 @@ class iwormBess{
 				if($fchar == 'w'){
 					$imglist[$j] = 'http://'.$ilist[1][$i];
 				}else if($fchar == '/'){
-					$imglist[$j] = 'http://'.$this->host.$ilist[1][$i];
+					$imglist[$j] = 'http://'.$hostName.$ilist[1][$i];
 				}else{
 					$imglist[$j] = $ilist[1][$i];
 				}
 				$j++;
 			}
 		}
-		// for($i=0;$i<count($imglist);$i++){
-		//     echo $imglist[$i].'<br />';
-		// }
+
 		// 判断函数getimagesize是否存在;
 		if(!function_exists('getimagesize')){
 			throw new Exception('server not install getimagesize!');
@@ -532,151 +588,6 @@ class iwormBess{
 			$ret_imgurl = '';
 		}
 		return $ret_imgurl;
-	}
-	
-	/**
-	 * 获取文章标题
-	 *
-	 * @param   $html        string  网页内容
-	 * @return  $tit         string  文章标题
-	 * @update  2016-03-29
-	 *
-	 */
-	private function getHtmlTitle($html){
-		//	获取本页面的标题
-		preg_match_all( '/<title>([\s\S]*?)<\/title>/' , $html , $tlist );
-		//	获取匹配到的title
-		if(isset($tlist[1][0])){
-			$tit = $tlist[1][0];
-			//	去掉标题所属模块
-			if($tpos = stripos($tit, '_')){
-				$tit = substr($tit, 0,$tpos);
-			}else if($tpos = stripos($tit, '-')){
-				$tit = substr($tit, 0,$tpos);
-			}else{
-				$tit = $tit;
-			}
-		}else{
-			$tit = '';
-		}
-		return $tit;
-	}
-	
-	/**
-	 * 获取网页内容，如果是文章，则收录，并返回true，如果非文章，返回false
-	 *
-	 * @param   $id			 int
-	 * @param   $html	     obj
-	 * @param   $title	     string
-	 * @return  $errorInfo   string
-	 * @update  2016-03-31
-	 *
-	 */
-	private function getHtmlContent($id,$html,$title,$hostName){
-		//	返回提示信息
-		$stateInfo = '';
-		do{
-			//	判断标题出现的次数
-			$times = substr_count($html, $title);
-			//	$title必须出现2-4次，再多可能就是首页了
-			if($times>=1 && $times<5){
-				$stateInfo = '文章标题过多，可能是主页/模块主页!<br />';
-				break;
-			}
-			
-			//	获取p标签的内容
-			//	preg_match_all( '/<p[\s\S]*>[\s\S]*<\/p>/' , $this->html , $plist );
-			preg_match_all( '/<p>.*<\/p>/' , $html , $plist );
-			//	print_r($plist);
-			$content = '';
-			for($i=0; $i<count($plist); $i++){
-				for($j=0; $j<count($plist[$i]); $j++){
-					//	剔除带a标签的p标签
-					if(!IsExistStr($plist[$i][$j],'href=')){
-						$content .= str_replace("'", '"', $plist[$i][$j]);
-					}
-				}
-			}
-			//	判断$content大小
-			if(strlen($content)<500){
-				$stateInfo = '内容过少，可能是一则通知!<br />';
-				break;
-			}
-			
-			//	获取关键字
-			preg_match_all('/<meta[\s]+name=\"keywords\"[\s]+content=\"([\s\S]*?)\"[\s]*[\/]?>/', $html, $kwlist);
-			if(empty($kwlist[1][0])){
-				$stateInfo = '关键字为空!<br />';
-				break;
-			}
-			//	替换掉单引号
-			$keywords = str_replace("'", '"', $kwlist[1][0]);
-			//	判断是否是热门关键字
-// 			$isHot = $this->isHotKeywords($keywords);
-// 			if(!$isHot){
-// 				$stateInfo = '非热门关键字!<br />';
-// 				break;
-// 			}
-			
-			//	获取描述
-			preg_match_all('/<meta[\s]+name=\"description\"[\s]+content=\"([\s\S]*?)\"[\s]*[\/]?>/', $html, $deslist);
-			if(empty($deslist[1][0])){
-				$stateInfo = '无描述!<br />';
-				break;
-			}
-			//	替换掉单引号
-			$description = str_replace("'", '"', $deslist[1][0]);
-			//	获取图片
-			if($this->GetHtmlImageOne($html,$hostName) === false){
-				$picurl = '';
-			}else{
-				$picurl = $this->GetHtmlImageOne($html,$hostName);
-			}
-			//	创建时间
-			$createtime = GetMkTime(time());
-			//	点击量
-			$hits = mt_rand(50,100);
-			//	$row = $dosql->GetOne("SELECT * FROM v_db_url WHERE url='".$this->url."'");
-			//	收录
-			//	创建infolist实体对象
-			$infolistObj = new infolistEntity();
-			//	初始化
-			$infolistObj->title = $title;
-			$infolistObj->urlId = $id;
-			$infolistObj->keywords = $keywords;
-			$infolistObj->description = $description;
-			$infolistObj->picurl = $picurl;
-			$infolistObj->hits = $hits;
-			$infolistObj->orderid = 0;
-			$count = $this->_InfolistEnter->addInfolist($infolistObj);
-			if($count < 1){
-				//	添加失败
-				$stateInfo = '插入infolist失败<br/>';
-				break;
-			}
-			$stateInfo = 'ok';
-		}while(false);
-		return $stateInfo;
-	}
-	
-	/**
-	 * 判断搜索到的文章是否为热门关键字
-	 *
-	 * @param 	string 	$keywords
-	 * @return	bool	true/fasle
-	 * @update	2016-07-19
-	 */
-	private function isHotKeywords($keywords){
-		$isHot = false;
-		//	获取24小时热门关键字
-		$keyArr = $this->_KeywordsEnter->getHotKeywords();
-		for($i=0;$i<count($keyArr);$i++){
-			if(IsExistStr($keywords, $keyArr[$i])){
-				$isHot = true;
-				break;
-			}
-		}
-		return $isHot;
 	}
 }
 ?>
